@@ -23,13 +23,25 @@ class MazePrinter:
                     color = self.color_wall
                 else:
                     color = self.color_path
-                print(f'\033[{abs_x};{abs_y}H\033[{color} {cell} \033[0m')
+                print(f"\033[{abs_x};{abs_y}H\033[{color}   \033[0m")
+    
+    def display_cell_debug(self, cell: str, x: int, y: int):
+        for x_brush in range(3):
+            for y_brush in range(3):
+                abs_x = x_brush + y * 3 + 3
+                abs_y = y_brush + x * 5 + 6
+                if (x_brush == 0 and y == 0) or (y_brush == 0 and x == 0):
+                    color = self.color_wall
+                else:
+                    color = self.color_path
+                print(f"\033[{abs_x};{abs_y}H\033[{color} {cell} \033[0m")
     
     def display_outer_borders(self):
-        for x in range(self.x_axis * 4):
-            for y in range(self.y_axis * 4):
-                if x == self.x_axis * 3 + 3 or y == self.y_axis * 3 + 3:
-                    print(f'\033[{x + 3};{y + 6}H\033[{self.color_wall} \033[0m')
+        color = self.color_wall
+        for x in range(self.x_axis * 3 + 4):
+            for y in range(self.y_axis * 3 + 4):
+                if y == self.y_axis * 3 + 3 or x == self.x_axis * 3 + 3:
+                    print(f'\033[{x + 3};{y + 6}H\033[{color} \033[0m')
 
     def display_maze(self):
         for x in range(self.x_axis):
