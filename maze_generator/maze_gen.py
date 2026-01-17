@@ -16,7 +16,7 @@ class MazeCell:
 
 class MazeGenerator(ABC):
     '''The core maze generator'''
-    def __init__(self, width: int, height: int,
+    def __init__(self, height: int, width: int,
                  *, seed: int | None = None) -> None:
         if seed is None:
             seed = nprand.randint(0, high=2147483647)
@@ -142,21 +142,40 @@ class DFSearch(MazeGenerator):
 
         def random_walk(current: MazeCell) -> None:
             adjacent = self.get_available_cells(current, available=available)
+            print('adjacent: ', adjacent)
+            print('avail;abel: ', available)
+            len(available)
             if len(available) == 0:
                 return
             if adjacent == {}:
                 move_stack.pop()
-                random_walk(self.get_maze_cell_from_coordinate(
+                return random_walk(self.get_maze_cell_from_coordinate(
                     move_stack[len(move_stack) - 1]))
+            print(list(adjacent.keys()))
             choice = self.rng.choice(list(adjacent.keys()))
             if choice == 'north':
                 current.north = True
                 adjacent['north'].south = True
+                available.remove(adjacent['north'].coordinates)
                 move_stack.append(adjacent['north'].coordinates)
-                random_walk(adjacent['north'])
+                return random_walk(adjacent['north'])
+            elif choice == 'south':
+                current.south = True
+                adjacent['south'].north = True
+                available.remove(adjacent['south'].coordinates)
+                move_stack.append(adjacent['south'].coordinates)
+                return random_walk(adjacent['south'])
+            elif choice == 'east':
+                current.east = True
+                adjacent['east'].west = True
+                available.remove(adjacent['east'].coordinates)
+                move_stack.append(adjacent['east'].coordinates)
+                return random_walk(adjacent['east'])
+            elif choice == 'west':
+                current.west = True
+                adjacent['west'].east = True
+                available.remove(adjacent['west'].coordinates)
+                move_stack.append(adjacent['west'].coordinates)
+                return random_walk(adjacent['west'])
         random_walk(self.get_maze_cell_from_coordinate(start))
         return maze
-
-
-gen = DFSearch(21, 15)
-print(gen.generate_maze())
