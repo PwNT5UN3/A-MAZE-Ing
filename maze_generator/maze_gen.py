@@ -93,25 +93,6 @@ class MazeGenerator(ABC):
                     return cell
         raise ValueError('Unexpected Error')
 
-    @abstractmethod
-    def generate_maze(self) -> List[List[MazeCell]]:
-        pass
-
-
-# class WilsonsAlgorithm(MazeGenerator):
-#     def __init__(self, width: int, height: int,
-#                  *, seed: int | None = None) -> None:
-#         super().__init__(width, height, seed=seed)
-
-#     def generate_maze(self) -> List[List[str]]:
-#         ...
-
-
-class DFSearch(MazeGenerator):
-    def __init__(self, width: int, height: int,
-                 *, seed: int | None = None) -> None:
-        super().__init__(width, height, seed=seed)
-
     def get_available_cells(self, current_cell: MazeCell,
                             available: list) -> Dict[str, MazeCell]:
         cells = {}
@@ -129,6 +110,97 @@ class DFSearch(MazeGenerator):
             cells['west'] = self.get_maze_cell_from_coordinate(west)
         return cells
 
+    @abstractmethod
+    def generate_maze(self) -> List[List[MazeCell]]:
+        pass
+
+
+class WilsonsAlgorithm(MazeGenerator):
+    def __init__(self, width: int, height: int,
+                 *, seed: int | None = None) -> None:
+        super().__init__(width, height, seed=seed)
+
+    def generate_maze(self) -> List[List[MazeCell]]:
+        maze = self.maze
+        available = self.get_all_coords()
+        for pattern_cell in self.pattern_coordinates:
+            available.remove(pattern_cell)
+        unvisited = available.copy()
+        existing_maze = set()
+        first_maze_cell_np = tuple(self.rng.choice(available))
+        existing_maze.add(tuple([int(first_maze_cell_np[0]),
+                                 int(first_maze_cell_np[1])]))
+        unvisited.remove(tuple([int(first_maze_cell_np[0]),
+                                int(first_maze_cell_np[1])]))
+        move_stack: list = []
+
+        def random_looperased_walk(current_cell: MazeCell) -> None:
+            print('move_stack: ', move_stack)
+            print('existing: ', sorted(sorted(
+                existing_maze, key=lambda x: x[1]), key=lambda x: x[0]))
+            print('pattern: ', self.get_pattern_coords())
+            if current_cell.coordinates in move_stack:
+                while current_cell in move_stack:
+                    move_stack.pop()
+            if current_cell.coordinates in existing_maze:
+                for cell in move_stack:
+                    existing_maze.add(cell)
+                    if cell in unvisited:
+                        unvisited.remove(cell)
+                move_stack.clear()
+                return
+            move_stack.append(current_cell.coordinates)
+            adjacent = self.get_available_cells(current_cell,
+                                                available=available)
+            previous = None
+            for directions in adjacent.keys():
+                if adjacent[directions].coordinates ==\
+                      move_stack[len(move_stack) - 2]:
+                    previous = adjacent[directions]
+            print('previous: ', previous)
+            print('adjacent: ', adjacent)
+            if adjacent == {}:
+                print('ok')
+                for cell in move_stack:
+                    existing_maze.add(cell)
+                    if cell in unvisited:
+                        unvisited.remove(cell)
+                move_stack.clear()
+                return
+            choice = self.rng.choice(list(adjacent.keys()))
+            print(choice)
+            if choice == 'north':
+                current_cell.north = True
+                adjacent['north'].south = True
+                return random_looperased_walk(adjacent['north'])
+            elif choice == 'south':
+                current_cell.south = True
+                adjacent['south'].north = True
+                return random_looperased_walk(adjacent['south'])
+            elif choice == 'east':
+                current_cell.east = True
+                adjacent['east'].west = True
+                return random_looperased_walk(adjacent['east'])
+            elif choice == 'west':
+                current_cell.west = True
+                adjacent['west'].east = True
+                return random_looperased_walk(adjacent['west'])
+        while len(unvisited) != 0:
+            print('available: ', available)
+            print('unvisited: ', unvisited)
+            walk_start_np = tuple(self.rng.choice(unvisited))
+            walk_start = tuple([int(walk_start_np[0]), int(walk_start_np[1])])
+            print(walk_start)
+            random_looperased_walk(
+                self.get_maze_cell_from_coordinate(walk_start))
+        return maze
+
+
+class DFSearch(MazeGenerator):
+    def __init__(self, width: int, height: int,
+                 *, seed: int | None = None) -> None:
+        super().__init__(width, height, seed=seed)
+
     def generate_maze(self) -> List[List[MazeCell]]:
         maze = self.maze
         available = self.get_all_coords()
@@ -142,16 +214,12 @@ class DFSearch(MazeGenerator):
 
         def random_walk(current: MazeCell) -> None:
             adjacent = self.get_available_cells(current, available=available)
-            print('adjacent: ', adjacent)
-            print('avail;abel: ', available)
-            len(available)
             if len(available) == 0:
                 return
             if adjacent == {}:
                 move_stack.pop()
                 return random_walk(self.get_maze_cell_from_coordinate(
                     move_stack[len(move_stack) - 1]))
-            print(list(adjacent.keys()))
             choice = self.rng.choice(list(adjacent.keys()))
             if choice == 'north':
                 current.north = True

@@ -1,8 +1,7 @@
-from maze_generator import DFSearch
+from maze_generator import WilsonsAlgorithm
 
-gen = DFSearch(10, 15)
+gen = WilsonsAlgorithm(10, 15)
 maze = gen.generate_maze()
-print(maze)
 with open('output.txt', 'w') as file:
     for row in maze:
         for cell in row:
