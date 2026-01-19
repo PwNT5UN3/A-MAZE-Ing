@@ -242,40 +242,39 @@ class DFSearch(MazeGenerator):
 
         def random_walk(current: MazeCell) -> None:
             adjacent = self.get_available_cells(current, available=available)
-            if len(available) == 0:
-                return
             if adjacent == {}:
                 move_stack.pop()
-                return random_walk(
-                    self.get_maze_cell_from_coordinate(
-                        move_stack[len(move_stack) - 1]
-                    )
-                )
+                return
             choice = self.rng.choice(list(adjacent.keys()))
             if choice == "north":
                 current.north = True
                 adjacent["north"].south = True
                 available.remove(adjacent["north"].coordinates)
                 move_stack.append(adjacent["north"].coordinates)
-                return random_walk(adjacent["north"])
+                return
             elif choice == "south":
                 current.south = True
                 adjacent["south"].north = True
                 available.remove(adjacent["south"].coordinates)
                 move_stack.append(adjacent["south"].coordinates)
-                return random_walk(adjacent["south"])
+                return
             elif choice == "east":
                 current.east = True
                 adjacent["east"].west = True
                 available.remove(adjacent["east"].coordinates)
                 move_stack.append(adjacent["east"].coordinates)
-                return random_walk(adjacent["east"])
+                return
             elif choice == "west":
                 current.west = True
                 adjacent["west"].east = True
                 available.remove(adjacent["west"].coordinates)
                 move_stack.append(adjacent["west"].coordinates)
-                return random_walk(adjacent["west"])
+                return
 
-        random_walk(self.get_maze_cell_from_coordinate(start))
+        while len(available) != 0:
+            random_walk(
+                self.get_maze_cell_from_coordinate(
+                    move_stack[len(move_stack) - 1]
+                )
+            )
         return maze
