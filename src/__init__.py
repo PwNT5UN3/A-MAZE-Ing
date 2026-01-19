@@ -1,0 +1,1 @@
+from .pyamaze import maze
