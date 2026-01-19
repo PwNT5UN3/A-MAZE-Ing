@@ -1,18 +1,26 @@
 from maze_generator import DFSearch, WilsonsAlgorithm
 
-gen = WilsonsAlgorithm(100, 100)
+print("generating...")
+gen = WilsonsAlgorithm(10, 10)
 maze = gen.generate_maze()
 with open("output.txt", "w") as file:
     for row in maze:
         for cell in row:
+            open_walls = 0
             cell_num = 15
             if cell.north:
                 cell_num -= 1
+                open_walls += 1
             if cell.east:
                 cell_num -= 2
+                open_walls += 1
             if cell.south:
                 cell_num -= 4
+                open_walls += 1
             if cell.west:
                 cell_num -= 8
+                open_walls += 1
+            if open_walls != 2:
+                print(f"open_walls in {cell.coordinates}: {open_walls}")
             file.write(hex(cell_num)[2:].capitalize())
         file.write("\n")

@@ -161,65 +161,65 @@ class WilsonsAlgorithm(MazeGenerator):
             tuple([int(first_maze_cell_np[0]), int(first_maze_cell_np[1])])
         )
         move_stack: list = []
+        movements: List[str] = []
 
-        def random_looperased_walk(current_cell: MazeCell) -> None:
-            if current_cell.coordinates in move_stack:
-                while current_cell in move_stack:
-                    move_stack.pop()
+        def add_walk_to_maze() -> None:
+            for move in range(len(move_stack) - 1):
+                current_cell = self.get_maze_cell_from_coordinate(
+                    move_stack[move]
+                )
+                next_cell = self.get_maze_cell_from_coordinate(
+                    move_stack[move + 1]
+                )
+                if movements[move] == "north":
+                    current_cell.north = True
+                    next_cell.south = True
+                elif movements[move] == "south":
+                    current_cell.south = True
+                    next_cell.north = True
+                elif movements[move] == "east":
+                    current_cell.east = True
+                    next_cell.west = True
+                elif movements[move] == "west":
+                    current_cell.west = True
+                    next_cell.east = True
+
+        def random_looperased_walk(current_cell: MazeCell) -> bool:
+            newest = move_stack.pop()
+            while newest in move_stack:
+                move_stack.pop()
+                movements.pop()
+            move_stack.append(newest)
             if current_cell.coordinates in existing_maze:
                 for cell in move_stack:
                     existing_maze.add(cell)
                     if cell in unvisited:
                         unvisited.remove(cell)
+                add_walk_to_maze()
                 move_stack.clear()
-                return
-            move_stack.append(current_cell.coordinates)
-            if len(move_stack) == 100:
-                move_stack.clear()
-                return
+                movements.clear()
+                return True
             adjacent = self.get_available_cells(
                 current_cell, available=available
             )
-            previous = None
-            for directions in adjacent.keys():
-                if (
-                    adjacent[directions].coordinates
-                    == move_stack[len(move_stack) - 2]
-                ):
-                    previous = directions
-            if previous is not None:
-                adjacent.pop(previous)
-            if adjacent == {}:
-                for cell in move_stack:
-                    existing_maze.add(cell)
-                    if cell in unvisited:
-                        unvisited.remove(cell)
-                move_stack.clear()
-                return
-            choice = self.rng.choice(list(adjacent.keys()))
-            if choice == "north":
-                current_cell.north = True
-                adjacent["north"].south = True
-                return random_looperased_walk(adjacent["north"])
-            elif choice == "south":
-                current_cell.south = True
-                adjacent["south"].north = True
-                return random_looperased_walk(adjacent["south"])
-            elif choice == "east":
-                current_cell.east = True
-                adjacent["east"].west = True
-                return random_looperased_walk(adjacent["east"])
-            elif choice == "west":
-                current_cell.west = True
-                adjacent["west"].east = True
-                return random_looperased_walk(adjacent["west"])
+            choice = str(self.rng.choice(list(adjacent.keys())))
+            movements.append(choice)
+            move_stack.append(adjacent[choice].coordinates)
+            return False
 
         while len(unvisited) != 0:
             walk_start_np = tuple(self.rng.choice(unvisited))
             walk_start = tuple([int(walk_start_np[0]), int(walk_start_np[1])])
-            random_looperased_walk(
+            move_stack.append(walk_start)
+            walk_ended = random_looperased_walk(
                 self.get_maze_cell_from_coordinate(walk_start)
             )
+            while not walk_ended:
+                walk_ended = random_looperased_walk(
+                    self.get_maze_cell_from_coordinate(
+                        move_stack[len(move_stack) - 1]
+                    )
+                )
         return maze
 
 
