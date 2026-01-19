@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+src/mlx/__init__.py
+src/mlx/mlx.py
+src/mlx.egg-info/PKG-INFO
+src/mlx.egg-info/SOURCES.txt
+src/mlx.egg-info/dependency_links.txt
+src/mlx.egg-info/top_level.txt
+src/mlx/test/Dont_panic.png
+src/mlx/test/Dont_panic.xpm
+src/mlx/test/mlxtest.py
+src/mlx/test/puffy.png
+src/mlx/test/puffy_small.png
+src/mlx/test/simple_test.py
