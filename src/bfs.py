@@ -1,6 +1,6 @@
 from collections import deque
 from typing import Protocol, runtime_checkable
-from src.maze_generator.maze_gen import DFSearch, MazeCell, MazeGenerator
+from maze_generator.maze_gen import DFSearch, MazeCell, MazeGenerator
 
 
 @runtime_checkable
@@ -10,18 +10,19 @@ class Finding(Protocol):
         self,
         maze: list[list[MazeCell]],
         start: tuple[int, int],
-        end: list[int],
+        end: tuple[int, int],
     ) -> list[tuple[int, int]] | None:
         pass
 
 
+# O(1)
 class BFS:
 
     def pathfind(
         self,
         maze: list[list[MazeCell]],
         start: tuple[int, int],
-        end: list[int],
+        end: tuple[int, int],
     ) -> list[tuple[int, int]] | None:
         height: int = len(maze)
         width: int = len(maze[0]) if height > 0 else 0
@@ -32,7 +33,6 @@ class BFS:
             return None
 
         queue = deque([start])
-        visited = {start}
         parent = {start: None}
 
         while queue:
@@ -41,7 +41,6 @@ class BFS:
             if current == end:
                 path = []
                 while current is not None:
-                    path.append(current)
                     current = parent[current]
                 return path[::-1]
 
@@ -60,8 +59,7 @@ class BFS:
                 neighbors.append((row, col - 1))
 
             for neighbor in neighbors:
-                if neighbor not in visited:
-                    visited.add(neighbor)
+                if neighbor not in parent:
                     parent[neighbor] = current
                     queue.append(neighbor)
 
