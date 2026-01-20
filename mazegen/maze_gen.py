@@ -32,9 +32,8 @@ class MazeGenerator(ABC):
         self.maze = self.create_maze_canvas()
 
     def check_42_pattern_avilability(self) -> bool:
-        if self.width >= 14:
-            if self.height >= 10:
-                return True
+        if self.width >= 14 and self.height >= 10:
+            return True
         return False
 
     def get_pattern_coords(self) -> List[tuple]:
@@ -102,9 +101,8 @@ class MazeGenerator(ABC):
 
     def remove_cell_from_array(self, cell: tuple, array: List[List]) -> None:
         for row in array:
-            for canvas_cell in row:
-                if canvas_cell.coordinates == cell:
-                    row.remove(canvas_cell)
+            if cell in row:
+                row.remove(cell)
 
     def get_maze_cell_from_coordinate(self, coordinate: tuple) -> MazeCell:
         # for row in self.maze:

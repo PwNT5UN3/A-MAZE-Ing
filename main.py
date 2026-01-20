@@ -1,5 +1,7 @@
 def main():
-    print("Hello from a-maze-ing!")
+    test = {}
+    test['test'] = 'test'
+    print(len(test))
 
 
 if __name__ == "__main__":

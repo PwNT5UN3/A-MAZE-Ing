@@ -1,8 +1,13 @@
 from mazegen import DFSearch, WilsonsAlgorithm
 
+
 print("generating...")
-gen = WilsonsAlgorithm(10, 10)
+gen = WilsonsAlgorithm(50, 50)
 maze = gen.generate_maze()
+# gen2 = DFSearch(50, 50)
+# maze2 = gen2.generate_maze()
+# check_perfection(gen, maze)
+# check_perfection(gen2, maze2)
 with open("output.txt", "w") as file:
     for row in maze:
         for cell in row:
@@ -20,7 +25,5 @@ with open("output.txt", "w") as file:
             if cell.west:
                 cell_num -= 8
                 open_walls += 1
-            if open_walls != 2:
-                print(f"open_walls in {cell.coordinates}: {open_walls}")
             file.write(hex(cell_num)[2:].capitalize())
         file.write("\n")
