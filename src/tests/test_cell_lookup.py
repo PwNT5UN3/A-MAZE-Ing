@@ -1,5 +1,5 @@
 import pytest
-from src.maze_generator.maze_gen import MazeCell, WilsonsAlgorithm
+from maze_generator.maze_gen import MazeCell, WilsonsAlgorithm
 
 
 def test_constructor_preserves_width_height_order():

@@ -1,4 +1,4 @@
-from src.maze_generator.maze_gen import (
+from maze_generator.maze_gen import (
     MazeGenerator,
     MazeCell,
     WilsonsAlgorithm,
