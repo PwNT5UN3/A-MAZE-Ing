@@ -110,6 +110,129 @@ class MazeParser:
 
         return char_map.get((north, east, south, west), MAZE_ROUNDED["empty"])
 
+    def render_maze_with_walls(self, maze: list[list[MazeCell]]) -> str:
+        """Render maze with proper walls - shows actual wall characters.
+
+        Each cell is rendered as a 3x3 block:
+        +--+
+        |  |
+        +--+
+
+        Open passages remove the wall in that direction.
+        """
+        if not maze or not maze[0]:
+            return ""
+
+        height = len(maze)
+        width = len(maze)
+
+        # Each cell needs 3 characters
+        # width and 2 lines height (with shared borders)
+        lines = []
+
+        # Top border
+        line = "┌"
+        for c in range(width):
+            line += "──"
+            if c < width - 1:
+                line += "┬"
+        line += "┐"
+        lines.append(line)
+
+        # Process each row
+        for r in range(height):
+            # Cell content line (middle of cell)
+            line = ""
+            for c in range(width):
+                cell = maze[r][c]
+                # Left wall
+                if c == 0:
+                    line += "│"
+                elif not maze[r][c - 1].east and not cell.west:
+                    line += "│"
+                else:
+                    line += " "
+
+                # Cell interior
+                line += "  "
+
+                # Right wall (if last column or wall exists)
+                if c == width - 1:
+                    line += "│"
+            lines.append(line)
+
+            # Bottom border of this row
+            if r < height - 1:
+                line = ""
+                for c in range(width):
+                    cell = maze[r][c]
+                    cell_below = maze[r + 1][c]
+
+                    # Left corner/junction
+                    if c == 0:
+                        if not cell.south and not cell_below.north:
+                            line += "├"
+                        else:
+                            line += "│"
+
+                    # Horizontal wall or space
+                    if not cell.south and not cell_below.north:
+                        line += "──"
+                    else:
+                        line += "  "
+
+                    # Junction or corner
+                    if c < width - 1:
+                        cell_right = maze[r][c + 1]
+                        cell_below_right = maze[r + 1][c + 1]
+
+                        # Count walls at this junction
+                        has_top = not cell.south and not cell_below.north
+                        has_bottom = not cell_below.south and not (
+                            r + 2 < height and maze[r + 2][c].north
+                        )
+                        has_left = not cell.east and not cell_right.west
+                        has_right = not cell_right.east and not (
+                            c + 2 < width and maze[r][c + 2].west
+                        )
+
+                        # Choose junction character
+                        walls = (has_top, has_right, has_bottom, has_left)
+                        junction_map = {
+                            (True, True, True, True): "┼",
+                            (True, True, True, False): "├",
+                            (True, True, False, True): "┴",
+                            (True, False, True, True): "┤",
+                            (False, True, True, True): "┬",
+                            (True, True, False, False): "└",
+                            (True, False, True, False): "│",
+                            (True, False, False, True): "┘",
+                            (False, True, True, False): "┌",
+                            (False, True, False, True): "─",
+                            (False, False, True, True): "┐",
+                            (False, False, False, False): " ",
+                        }
+                        line += junction_map.get(walls, "┼")
+                    else:
+                        # Right edge
+                        if not cell.south and not cell_below.north:
+                            line += "┤"
+                        else:
+                            line += "│"
+
+                lines.append(line)
+
+        # Bottom border
+        line = "└"
+        for c in range(width):
+            line += "──"
+            if c < width - 1:
+                line += "┴"
+        line += "┘"
+        lines.append(line)
+
+        return "\n".join(lines)
+
     def render_maze_to_string(
         self, maze: list[list[MazeCell]], cell_size: int = 1
     ) -> str:
@@ -174,17 +297,13 @@ class MazeParser:
 
 
 def test() -> None:
-    gen = WilsonsAlgorithm(height=70, width=40)
+    gen = WilsonsAlgorithm(height=10, width=9)
     maze = gen.generate_maze()
     parser = MazeParser()
 
-    # Render the maze with Unicode characters
-    rendered = parser.render_maze_to_string(maze)
-    print(rendered)
-
-    # # Optional: show raw coordinates
-    # coordinates = parser.get_raw_coordinates(maze)
-    # print(f"\nTotal cells: {len(coordinates)}")
+    # Render the maze with proper walls
+    rendered = parser.render_maze_with_walls(maze)
+    cprint(rendered, "yellow")
 
 
 if __name__ == "__main__":
