@@ -47,18 +47,22 @@ class MazeParser:
         ]
 
     def get_char_for_border(
-        self, north: bool, east: bool, south: bool, west: bool
+        self, north: bool, south: bool, east: bool, west: bool
     ) -> str:
         """Map open passage directions to appropriate Unicode box-drawing
         character.
 
         Args:
-            north, east, south, west: True if passage is open in that direction
+            north, south, east, west: True if passage is open in that direction
+            (matching MazeCell field order)
 
         Returns:
             Unicode box-drawing character representing the cell
         """
-        # Lookup table: (N, E, S, W) -> character
+        #   N
+        # W   E
+        #   S
+        # Lookup table: (N, S, E, W) -> character (matching MazeCell order)
         char_map = {
             # No passages open (all walls) - cross
             (False, False, False, False): MAZE_ROUNDED["cross"],
@@ -66,13 +70,13 @@ class MazeParser:
             (True, False, False, False): MAZE_ROUNDED[
                 "wall_v"
             ],  # │ north only
-            (False, True, False, False): MAZE_ROUNDED["wall_h"],  # ─ east only
-            (False, False, True, False): MAZE_ROUNDED[
+            (False, False, True, False): MAZE_ROUNDED["wall_h"],  # ─ east only
+            (False, True, False, False): MAZE_ROUNDED[
                 "wall_v"
             ],  # │ south only
             (False, False, False, True): MAZE_ROUNDED["wall_h"],  # ─ west only
             # Two passages open - corners
-            (True, True, False, False): MAZE_ROUNDED[
+            (True, False, True, False): MAZE_ROUNDED[
                 "corn_bl"
             ],  # ╰ north + east
             (True, False, False, True): MAZE_ROUNDED[
@@ -81,34 +85,34 @@ class MazeParser:
             (False, True, True, False): MAZE_ROUNDED[
                 "corn_tl"
             ],  # ╭ east + south
-            (False, False, True, True): MAZE_ROUNDED[
+            (False, True, False, True): MAZE_ROUNDED[
                 "corn_tr"
             ],  # ╮ south + west
             # Two passages open - straight through
-            (True, False, True, False): MAZE_ROUNDED[
+            (True, True, False, False): MAZE_ROUNDED[
                 "wall_v"
             ],  # │ north + south
-            (False, True, False, True): MAZE_ROUNDED[
+            (False, False, True, True): MAZE_ROUNDED[
                 "wall_h"
             ],  # ─ east + west
             # Three passages open - T-junctions
             (True, True, True, False): MAZE_ROUNDED[
                 "t_left"
-            ],  # ┤ N+E+S (no west)
-            (True, True, False, True): MAZE_ROUNDED[
+            ],  # ┤ N+S+E (no west)
+            (True, False, True, True): MAZE_ROUNDED[
                 "t_down"
             ],  # ┬ N+E+W (no south)
-            (True, False, True, True): MAZE_ROUNDED[
+            (True, True, False, True): MAZE_ROUNDED[
                 "t_right"
             ],  # ├ N+S+W (no east)
             (False, True, True, True): MAZE_ROUNDED[
                 "t_up"
-            ],  # ┴ E+S+W (no north)
+            ],  # ┴ S+E+W (no north)
             # All passages open
-            (True, True, True, True): MAZE_ROUNDED["empty"],  # ┼ all open
+            (True, True, True, True): MAZE_ROUNDED["empty"],  # all open
         }
 
-        return char_map.get((north, east, south, west), MAZE_ROUNDED["empty"])
+        return char_map.get((north, south, east, west), MAZE_ROUNDED["empty"])
 
     def render_maze_to_string(
         self, maze: list[list[MazeCell]], cell_size: int = 1
@@ -131,8 +135,8 @@ class MazeParser:
                 for cell in row:
                     char = self.get_char_for_border(
                         north=cell.north,
-                        east=cell.east,
                         south=cell.south,
+                        east=cell.east,
                         west=cell.west,
                     )
                     line += char
@@ -174,13 +178,13 @@ class MazeParser:
 
 
 def test() -> None:
-    gen = WilsonsAlgorithm(height=70, width=40)
+    gen = DFSearch(height=70, width=40)
     maze = gen.generate_maze()
     parser = MazeParser()
 
     # Render the maze with Unicode characters
     rendered = parser.render_maze_to_string(maze)
-    pprint(rendered)
+    print(rendered)
 
     # # Optional: show raw coordinates
     # coordinates = parser.get_raw_coordinates(maze)
