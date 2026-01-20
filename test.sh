@@ -1,0 +1,1 @@
+pytest src/tests/test_bfs_pathfinding.py -v

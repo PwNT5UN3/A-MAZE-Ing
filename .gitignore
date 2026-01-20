@@ -8,3 +8,4 @@ config.txt
 tests/
 .pytest_cache/
 .mlx/*
+.DS_Store
