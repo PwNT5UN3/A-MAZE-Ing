@@ -1,4 +1,4 @@
-from maze_generator import DFSearch, WilsonsAlgorithm
+from mazegen import DFSearch, WilsonsAlgorithm
 
 print("generating...")
 gen = WilsonsAlgorithm(10, 10)
