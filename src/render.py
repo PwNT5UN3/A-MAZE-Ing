@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-from turtle import width
-from typing import Callable, Literal, Type
-import bfs
-from src.maze_gen import (
+from typing import Callable, Literal, Type, Optional
+from src.maze_gen import (  # noqa 401
     MazeCell,
     DFSearch,
     WilsonsAlgorithm,
@@ -17,13 +15,13 @@ import os
 def colorize(
     wall_color: str = "yellow",
     fourty_two: str = "cyan",
-    path_color: str | None = None,
-    background: str | None = None,
+    path_color: Optional[str] = None,
+    background: Optional[str] = None,
     start_color: str = "red",
     end_color: str = "magenta",
     start_marker: str = "S",
     end_marker: str = "E",
-) -> Callable[..., str]:
+) -> Callable[[str, bool], str]:
     """Create a colorizer function for maze rendering.
 
     Args:
@@ -230,8 +228,8 @@ class MazeRenderer:
         *,
         start: tuple[int, int] | None,
         end: tuple[int, int] | None,
-        start_marker: str = "S ",
-        end_marker: str = "E ",
+        start_marker: str = "E ",
+        end_marker: str = "S ",
     ) -> None:
         start_coord = start if start is not None else (0, 0)
         end_coord = end if end is not None else (rows - 1, cols - 1)
@@ -292,15 +290,17 @@ class Terminal:
         exit: tuple[int, int] | None = None,
         delay: float = 0.02,
     ) -> None:
-        self.maze_generator_cls = maze_generator_cls
-        self.pathfinder_cls = pathfinder_cls
-        self.width = width
-        self.height = height
-        self.entry = entry
-        self.exit = exit if exit is not None else (height - 1, width - 1)
-        self.delay = delay
+        self.maze_generator_cls: Type[MazeGenerator] = maze_generator_cls
+        self.pathfinder_cls: Type[Finding] = pathfinder_cls
+        self.width: int = width
+        self.height: int = height
+        self.entry: tuple[int, int] = entry
+        self.exit: tuple[int, int] = (
+            exit if exit is not None else (height - 1, width - 1)
+        )
+        self.delay: float = delay
 
-        self.renderer = MazeRenderer()
+        self.renderer: MazeRenderer = MazeRenderer()
         self.wall_color: str = "yellow"
         self.empty_color: str = "cyan"
         self.path_color: str = "green"
@@ -343,7 +343,8 @@ class Terminal:
             import readchar
         except ImportError:
             print(
-                "Error: 'readchar' library not found. Install it with: pip install readchar"
+                "Error: 'readchar' library not found. Install it with: "
+                + "pip install readchar"
             )
             return
 
@@ -385,7 +386,7 @@ class Terminal:
             print("\n0 - Back to Main Menu\n")
 
             try:
-                key = readchar.readchar()
+                key: str = readchar.readchar()
 
                 if key == "1":
                     selected = self._select_color_from_list(
@@ -416,10 +417,10 @@ class Terminal:
                         if bg:
                             bg_name = bg.replace("on_", "")
                             print(f"  {idx}. {colored(bg_name, 'white', bg)}")
-                    choice = readchar.readchar()
+                    choice: str = readchar.readchar()
                     try:
-                        idx = int(choice) - 1
-                        self.background = background_colors[idx]
+                        _: int = int(choice) - 1
+                        self.background = background_colors[_]
                     except (ValueError, IndexError):
                         pass
 
@@ -457,8 +458,12 @@ class Terminal:
         self._clear_screen()
         print(rendered)
         print(
-            f"\n[Path: {'VISIBLE' if show_path else 'HIDDEN'}] "
-            "Press P to toggle, C for colors, SPACE to regenerate, Q to quit.\n"
+            "==== MENU ===="
+            + f"\n[Path: {'VISIBLE' if show_path else 'HIDDEN'}]\n"
+            + "Press:\n"
+            + "[P] to show the path\n[C] to change the colors\n[SPACE] to "
+            + "regenerate the maze"
+            + "\n[Q] to quit.\n"
         )
 
     def _animate_path(self) -> None:
@@ -481,7 +486,7 @@ class Terminal:
         time.sleep(self.delay)
 
         for i in range(1, len(path_steps) + 1):
-            partial_path = path_steps[:i]
+            partial_path: list[tuple[int, int]] = path_steps[:i]
             rendered = self.renderer.render_maze_walls(
                 self.maze,
                 self.colorizer,
@@ -494,12 +499,12 @@ class Terminal:
             time.sleep(self.delay)
 
     def _generate_maze_and_path(self) -> None:
-        generator = self.maze_generator_cls(
+        generator: MazeGenerator = self.maze_generator_cls(
             width=self.width, height=self.height
         )
         self.maze = generator.generate_maze()
 
-        solver = self.pathfinder_cls()
+        solver: Finding = self.pathfinder_cls()
         self.path = solver.pathfind(
             self.maze,
             start=self.entry,
@@ -511,7 +516,8 @@ class Terminal:
             import readchar
         except ImportError:
             print(
-                "Error: 'readchar' library not found. Install it with: pip install readchar"
+                "Error: 'readchar' library not found. Install it with: "
+                + "pip install readchar"
             )
             return
 
@@ -525,8 +531,9 @@ class Terminal:
         print("║  Q     - Quit                              ║")
         print("╚════════════════════════════════════════════╝")
         print(
-            f"\nWidth={self.width}, Height={self.height}, Entry={self.entry}, Exit={self.exit}\n"
-            "Press SPACE to generate a maze...\n"
+            f"\nWidth={self.width}, Height={self.height}, Entry={self.entry}, "
+            + f"Exit={self.exit}\n"
+            + "Press SPACE to generate a maze...\n"
         )
 
         while True:
@@ -568,7 +575,7 @@ class Terminal:
             except KeyboardInterrupt:
                 print("\n\nInterrupted. Goodbye!")
                 break
-            except Exception as exc:  # pragma: no cover - user I/O guard
+            except Exception as exc:
                 print(f"Error: {exc}")
                 break
 
@@ -584,10 +591,10 @@ class MazeAppManager:
         width: int = 10,
         height: int = 14,
         entry: tuple[int, int] = (0, 0),
-        exit: tuple[int, int] | None = None,
+        exit: Optional[tuple[int, int]] = None,
         delay: float = 0.02,
     ) -> None:
-        self.terminal = Terminal(
+        self.terminal: Terminal = Terminal(
             maze_generator_cls=maze_generator_cls,
             pathfinder_cls=pathfinder_cls,
             width=width,
@@ -602,12 +609,12 @@ class MazeAppManager:
 
 
 def interactive_maze_app(
-    height: int,
-    width: int,
-    entry: tuple[int, int],
-    exit: tuple[int, int] | None,
-    maze_generator_cls: MazeGenerator,
-    pathfinder_cls: Finding,
+    height: int = 14,
+    width: int = 10,
+    entry: tuple[int, int] = (0, 0),
+    exit: Optional[tuple[int, int]] = None,
+    maze_generator_cls: Type[MazeGenerator] = WilsonsAlgorithm,
+    pathfinder_cls: Type[Finding] = BFS,
 ) -> None:
     """Backward-compatible wrapper that launches the terminal UI."""
 
@@ -623,14 +630,13 @@ def interactive_maze_app(
 
 
 if __name__ == "__main__":
-    # Simple manual test entry point
-    conf_height = 20
-    conf_width = 40
+    conf_height = 14
+    conf_width = 14
     interactive_maze_app(
         height=conf_height,
         width=conf_width,
         entry=(0, 0),
         exit=(conf_height - 1, conf_width - 1),
-        maze_generator_cls=DFSearch,
+        maze_generator_cls=WilsonsAlgorithm,
         pathfinder_cls=BFS,
     )
