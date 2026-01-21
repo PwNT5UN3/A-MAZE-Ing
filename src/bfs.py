@@ -6,16 +6,6 @@ Run with either:
   python src/bfs.py        # also supported from repository root or from src/
 """
 
-import os
-import sys
-
-# When executed directly (e.g. `python src/bfs.py`), ensure the repo root is on sys.path
-# so absolute imports like `from src.maze_gen import ...` succeed.
-if __name__ == "__main__" and __package__ is None:
-    repo_root = os.path.dirname(os.path.dirname(__file__))
-    if repo_root not in sys.path:
-        sys.path.insert(0, repo_root)
-
 from collections import deque
 from typing import Protocol, runtime_checkable
 from src.maze_gen import DFSearch, MazeCell, MazeGenerator
@@ -151,7 +141,7 @@ class PathSolver:
 #     assert BFS().path_to_directions(path) == ["E", "S"]
 
 
-def test() -> None:
+def main() -> None:
     try:
         solver: PathSolver = PathSolver(maze_generator=DFSearch, algorithm=BFS)
         solver.solve(width=15, height=15, start=(0, 0), end=(14, 14))
@@ -161,4 +151,4 @@ def test() -> None:
 
 
 if __name__ == "__main__":
-    test()
+    main()

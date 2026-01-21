@@ -1,4 +1,4 @@
-from .maze_gen import MazeCell, DFSearch, WilsonsAlgorithm
+from src.maze_gen import MazeCell, DFSearch, WilsonsAlgorithm
 from termcolor import colored, cprint
 from pprint import pprint
 
