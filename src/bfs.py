@@ -1,6 +1,24 @@
+#!/usr/bin/env python3
+"""Breadth-first search pathfinder — supports running as module or script.
+
+Run with either:
+  python -m src.bfs        # recommended
+  python src/bfs.py        # also supported from repository root or from src/
+"""
+
+import os
+import sys
+
+# When executed directly (e.g. `python src/bfs.py`), ensure the repo root is on sys.path
+# so absolute imports like `from src.maze_gen import ...` succeed.
+if __name__ == "__main__" and __package__ is None:
+    repo_root = os.path.dirname(os.path.dirname(__file__))
+    if repo_root not in sys.path:
+        sys.path.insert(0, repo_root)
+
 from collections import deque
 from typing import Protocol, runtime_checkable
-from maze_generator.maze_gen import DFSearch, MazeCell, MazeGenerator
+from src.maze_gen import DFSearch, MazeCell, MazeGenerator
 
 
 @runtime_checkable
@@ -14,9 +32,13 @@ class Finding(Protocol):
     ) -> list[tuple[int, int]] | None:
         pass
 
+    def path_to_directions(self, path: list[tuple[int, int]]) -> list[str]: ...
 
-# Time complexity: O(V + E), where V is the number of cells and E is the number of connections between cells
+
 class BFS:
+    """Time complexity: O(V + E), where V is the number of cells and E
+    is the number of connections between cells
+    """
 
     def pathfind(
         self,
@@ -124,9 +146,19 @@ class PathSolver:
             print("No path found!")
 
 
-if __name__ == "__main__":
+# def test_path_to_directions_roundtrip():
+#     path = [(0, 0), (0, 1), (1, 1)]
+#     assert BFS().path_to_directions(path) == ["E", "S"]
+
+
+def test() -> None:
     try:
         solver: PathSolver = PathSolver(maze_generator=DFSearch, algorithm=BFS)
         solver.solve(width=15, height=15, start=(0, 0), end=(14, 14))
+        # test_path_to_directions_roundtrip()
     except Exception as e:
         print(f"Something went wrong -> {e}")
+
+
+if __name__ == "__main__":
+    test()
