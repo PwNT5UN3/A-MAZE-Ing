@@ -1,7 +1,13 @@
+from dataclasses import dataclass, fields
+
+@dataclass
+class test:
+    foo: int = 1
+    bar: int = 2
+
 def main():
-    test = {}
-    test['test'] = 'test'
-    print(len(test))
+    tests = test()
+    print(list(map(lambda x: x.name, fields(tests))))
 
 
 if __name__ == "__main__":

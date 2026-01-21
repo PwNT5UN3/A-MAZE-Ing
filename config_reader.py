@@ -5,7 +5,7 @@ def read_config(config_file: "str") -> dict:
     configs: Dict[str, str] = {}
     with open(config_file, "r") as config:
         for line in config:
-            if line.startswith("#"):
+            if line.startswith("#") or '=' not in line:
                 continue
             if line.startswith("WIDTH"):
                 if configs.get("width") is None:
