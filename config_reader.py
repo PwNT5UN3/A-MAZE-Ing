@@ -1,49 +1,98 @@
-from typing import Dict
-
-
 def read_config(config_file: "str") -> dict:
-    configs: Dict[str, str] = {}
-    with open(config_file, "r") as config:
+    required = set(['width', 'height', 'entry.x', 'entry.y',
+                    'exit.x', 'exit.y'])
+    configs: dict[str, str | int | bool] = {}
+    with open(config_file) as config:
         for line in config:
-            if line.startswith("#") or '=' not in line:
+            line = line.strip().lower()
+            if line.startswith("#"):
                 continue
-            if line.startswith("WIDTH"):
+            if '=' not in line:
+                raise ValueError('Non-Comments must be declarations with =')
+            key, val = map(str.strip, line.split('=', 1))
+            if key == 'width':
                 if configs.get("width") is None:
-                    configs["width"] = line.split("=")[1].strip("\n")
+                    configs["width"] = val
                     if int(configs["width"]) <= 0:
                         raise ValueError("width cannot be less than 1")
                 else:
                     raise ValueError("Width is defined multiple times!")
-            if line.startswith("HEIGHT"):
+            elif key == 'height':
                 if configs.get("height") is None:
-                    configs["height"] = line.split("=")[1].strip("\n")
+                    configs["height"] = val
                     if int(configs["height"]) <= 0:
                         raise ValueError("height cannot be less than 1")
                 else:
                     raise ValueError("Height is defined multiple times!")
-            if line.startswith("ENTRY"):
-                if configs.get("entry") is None:
-                    configs["entry"] = line.split("=")[1].strip("\n")
+            elif key == 'entry':
+                if configs.get("entry.x") is None\
+                        and configs.get('entry.y') is None:
+                    if ',' not in val:
+                        raise ValueError('Expected entry in this format: x,y')
+                    x, y = map(str.strip, val.split(',', 1))
+                    if int(x) < 0 or int(y) < 0:
+                        raise ValueError('Coordinates cannot be negative!')
+                    if int(x) >= int(configs.get('width', -1))\
+                            or int(y) >= int(configs.get('height', -1)):
+                        raise ValueError('Coordinates cannot be outside of ' +
+                                         'the maze borders!')
+                    configs['entry.x'] = int(x)
+                    configs['entry.y'] = int(y)
                 else:
                     raise ValueError("Entry is defined multiple times!")
-            if line.startswith("EXIT"):
-                if configs.get("exit") is None:
-                    configs["exit"] = line.split("=")[1].strip("\n")
+            elif key == 'exit':
+                if configs.get("exit.x") is None\
+                        and configs.get('exit.y') is None:
+                    if ',' not in val:
+                        raise ValueError('Expected entry in this format: x,y')
+                    x, y = map(str.strip, val.split(',', 1))
+                    if int(x) < 0 or int(y) < 0:
+                        raise ValueError('Coordinates cannot be negative!')
+                    if int(x) >= int(configs.get('width', -1))\
+                            or int(y) >= int(configs.get('height', -1)):
+                        raise ValueError('Coordinates cannot be outside of ' +
+                                         'the maze borders!')
+                    configs['exit.x'] = int(x)
+                    configs['exit.y'] = int(y)
                 else:
                     raise ValueError("Exit is defined multiple times!")
-            if line.startswith("PERFECT"):
+            elif key == 'perfect':
                 if configs.get("perfect") is None:
-                    configs["perfect"] = line.split("=")[1].strip("\n")
-                    if configs["perfect"] not in ["True", "False"]:
+                    if val not in ["true", "false"]:
                         raise ValueError(
                             'Perfect needs to be either "True" or "False"'
                         )
+                    configs['perfect'] = val == 'true'
                 else:
                     raise ValueError("Perfect is defined multiple times!")
-    if configs.get("width") is None or configs.get("height") is None:
+            elif key == 'output_file':
+                configs['output_file'] = val
+            elif key == 'seed':
+                try:
+                    if int(val) < 0 or int(val) > 2147483647:
+                        raise ValueError('')
+                except Exception:
+                    raise ValueError("I'm too lazy to support multiple seed " +
+                                     "datatypes, so please stick with " +
+                                     "positive signed 32-bit integers")
+            elif key == 'algorithm':
+                if val not in ['wilson', 'dfs']:
+                    raise ValueError(f'{val.capitalize()} is not a valid ' +
+                                     'algorithm, please use a valid algorithm')
+                configs['algorithm'] = val
+            else:
+                raise KeyError(f'{key.capitalize()} is not a valid key, ' +
+                               'please remove it from the config file')
+    if set(configs.keys()).intersection(required) != required:
         raise ValueError(
-            '"WIDTH" and "HEIGHT" must be defined in the config file'
+            'width, height, entry and exit must be defined in the config file'
         )
+    if configs.get('output_file') is None or configs.get('output_file') == '':
+        configs['output_file'] = 'output.txt'
+    if configs.get('algorithm') is None or configs.get('algorithm') == '':
+        configs['algorithm'] = 'dfs'
+    if configs.get('seed') is None or configs.get('seed') == '':
+        configs['seed'] = False
     return configs
 
 
