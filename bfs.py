@@ -39,8 +39,9 @@ class BFS:
             current = queue.popleft()
 
             if current == end:
-                path = []
+                path: list[tuple[int, int]] = []
                 while current is not None:
+                    path.append(current)
                     current = parent[current]
                 return path[::-1]
 
