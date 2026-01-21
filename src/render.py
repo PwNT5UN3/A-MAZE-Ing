@@ -2,21 +2,6 @@ from src.maze_gen import MazeCell, DFSearch, WilsonsAlgorithm
 from termcolor import colored, cprint
 from pprint import pprint
 
-MAZE_ROUNDED = {
-    "wall_v": "│",
-    "wall_h": "─",
-    "corn_tl": "╭",
-    "corn_tr": "╮",
-    "corn_bl": "╰",
-    "corn_br": "╯",
-    "t_down": "┬",
-    "t_up": "┴",
-    "t_right": "├",
-    "t_left": "┤",
-    "cross": "┼",
-    "empty": " ",
-}
-
 
 class MazeParser:
 
@@ -44,7 +29,12 @@ class MazeParser:
         ]
 
     def get_char_for_border(
-        self, north: bool, south: bool, east: bool, west: bool
+        self,
+        north: bool,
+        south: bool,
+        east: bool,
+        west: bool,
+        fourty_two_pattern: bool,
     ) -> str:
         """Map open passage directions to appropriate Unicode box-drawing
         character.
@@ -59,119 +49,54 @@ class MazeParser:
         #   N
         # W   E
         #   S
-        # Lookup table: (N, S, E, W) -> character (matching MazeCell order)
+        # Lookup table: (N, S, E, W)
         char_map = {
-            # No passages open (all walls) - cross
-            (False, False, False, False): MAZE_ROUNDED["cross"],
-            # Single passage open
-            (True, False, False, False): MAZE_ROUNDED[
-                "wall_v"
-            ],  # │ north only
-            (False, False, True, False): MAZE_ROUNDED["wall_h"],  # ─ east only
-            (False, True, False, False): MAZE_ROUNDED[
-                "wall_v"
-            ],  # │ south only
-            (False, False, False, True): MAZE_ROUNDED["wall_h"],  # ─ west only
-            # Two passages open - corners
-            (True, False, True, False): MAZE_ROUNDED[
-                "corn_bl"
-            ],  # ╰ north + east
-            (True, False, False, True): MAZE_ROUNDED[
-                "corn_br"
-            ],  # ╯ north + west
-            (False, True, True, False): MAZE_ROUNDED[
-                "corn_tl"
-            ],  # ╭ east + south
-            (False, True, False, True): MAZE_ROUNDED[
-                "corn_tr"
-            ],  # ╮ south + west
-            # Two passages open - straight through
-            (True, True, False, False): MAZE_ROUNDED[
-                "wall_v"
-            ],  # │ north + south
-            (False, False, True, True): MAZE_ROUNDED[
-                "wall_h"
-            ],  # ─ east + west
-            # Three passages open - T-junctions
-            (True, True, True, False): MAZE_ROUNDED[
-                "t_left"
-            ],  # ┤ N+S+E (no west)
-            (True, False, True, True): MAZE_ROUNDED[
-                "t_down"
-            ],  # ┬ N+E+W (no south)
-            (True, True, False, True): MAZE_ROUNDED[
-                "t_right"
-            ],  # ├ N+S+W (no east)
-            (False, True, True, True): MAZE_ROUNDED[
-                "t_up"
-            ],  # ┴ S+E+W (no north)
-            # All passages open
-            (True, True, True, True): MAZE_ROUNDED["empty"],  # all open
+            # --- 1. NO CONNECTIONS (Isolated) ---
+            # Was "cross", should be empty or a small dot/pillar
+            (False, False, False, False): " ",
+            # --- 2. SINGLE CONNECTIONS (Dead Ends) ---
+            (True, False, False, False): "╵",  # North only (Stub Up)
+            (False, True, False, False): "╷",  # South only (Stub Down)
+            (False, False, True, False): "╶",  # East only (Stub Right)
+            (False, False, False, True): "╴",  # West only (Stub Left)
+            # --- 3. TWO CONNECTIONS (Straight) ---
+            (True, True, False, False): "│",  # N + S (Vertical Wall)
+            (False, False, True, True): "─",  # E + W (Horizontal Wall)
+            # --- 4. TWO CONNECTIONS (Corners) ---
+            (True, False, True, False): "╰",  # N + E (Bottom-Left Corner)
+            (True, False, False, True): "╯",  # N + W (Bottom-Right Corner)
+            (False, True, True, False): "╭",  # S + E (Top-Left Corner)
+            (False, True, False, True): "╮",  # S + W (Top-Right Corner)
+            # --- 5. THREE CONNECTIONS (T-Junctions) ---
+            (True, True, True, False): "├",  # N+S+E (Vertical + Right)
+            (True, True, False, True): "┤",  # N+S+W (Vertical + Left)
+            (False, True, True, True): "┬",  # S+E+W (Horizontal + Down)
+            (True, False, True, True): "┴",  # N+E+W (Horizontal + Up)
+            # --- 6. ALL CONNECTIONS (Cross) ---
+            (True, True, True, True): "┼",  # N+S+E+W
         }
-
+        if fourty_two_pattern:
+            return MAZE_ROUNDED["FLAG_SPECIAL_DOT"]
         return char_map.get((north, south, east, west), MAZE_ROUNDED["empty"])
 
     def render_maze_to_string(
-        self, maze: list[list[MazeCell]], cell_size: int = 1
+        self,
+        maze: list[list[MazeCell]],
     ) -> str:
-        """Render the maze as a string with Unicode box-drawing characters.
-
-        Args:
-            maze: 2D list of MazeCell objects
-            cell_size: Size multiplier for each cell
-            (1=normal, 2=double, 3=triple, etc.)
-
-        Returns:
-            String representation of the maze
-        """
-        if cell_size == 1:
-            # Original compact rendering
-            lines = []
-            for row in maze:
-                line = ""
-                for cell in row:
-                    char = self.get_char_for_border(
-                        north=cell.north,
-                        south=cell.south,
-                        east=cell.east,
-                        west=cell.west,
-                    )
-                    line += char
-                lines.append(line)
-            return "\n".join(lines)
-        else:
-            # Larger rendering with walls and spaces
-            lines = []
-            for row in maze:
-                # Create multiple lines per row
-                for line_offset in range(cell_size):
-                    line = ""
-                    for cell in row:
-                        if line_offset == 0:
-                            # Top edge
-                            if cell.north:
-                                line += " " * cell_size
-                            else:
-                                line += "─" * cell_size
-                        elif line_offset == cell_size - 1:
-                            # Bottom edge
-                            if cell.south:
-                                line += " " * cell_size
-                            else:
-                                line += "─" * cell_size
-                        else:
-                            # Middle lines
-                            if cell.west:
-                                line += " "
-                            else:
-                                line += "│"
-                            line += " " * (cell_size - 2)
-                            if cell.east:
-                                line += " "
-                            else:
-                                line += "│"
-                    lines.append(line)
-            return "\n".join(lines)
+        lines = []
+        for row in maze:
+            line = ""
+            for cell in row:
+                char = self.get_char_for_border(
+                    north=cell.north,
+                    south=cell.south,
+                    east=cell.east,
+                    west=cell.west,
+                    fourty_two_pattern=cell.fourty_two_pattern,
+                )
+                line += char
+            lines.append(line)
+        return "\n".join(lines)
 
 
 def test() -> None:
