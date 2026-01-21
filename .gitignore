@@ -11,4 +11,3 @@ tests/
 .DS_Store
 a_maze_ing.egg-info/
 uv.lock
-.gitignore

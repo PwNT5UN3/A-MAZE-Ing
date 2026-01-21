@@ -142,7 +142,7 @@ class WilsonsAlgorithm(MazeGenerator):
     def __init__(
         self, width: int, height: int, *, seed: int | None = None
     ) -> None:
-        super().__init__(width, height, seed=seed)
+        super().__init__(height=height, width=width, seed=seed)
 
     def generate_maze(self) -> List[List[MazeCell]]:
         maze = self.maze
@@ -225,7 +225,7 @@ class DFSearch(MazeGenerator):
     def __init__(
         self, width: int, height: int, *, seed: int | None = None
     ) -> None:
-        super().__init__(width, height, seed=seed)
+        super().__init__(height=height, width=width, seed=seed)
 
     def generate_maze(self) -> List[List[MazeCell]]:
         maze = self.maze
