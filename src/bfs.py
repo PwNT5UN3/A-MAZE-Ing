@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""Breadth-first search pathfinder — supports running as module or script.
-
-Run with either:
-  python -m src.bfs        # recommended
-  python src/bfs.py        # also supported from repository root or from src/
-"""
-
 from collections import deque
 from typing import Protocol, runtime_checkable
 from src.maze_gen import DFSearch, MazeCell, MazeGenerator
@@ -136,16 +129,16 @@ class PathSolver:
             print("No path found!")
 
 
-# def test_path_to_directions_roundtrip():
-#     path = [(0, 0), (0, 1), (1, 1)]
-#     assert BFS().path_to_directions(path) == ["E", "S"]
+def test_path_to_directions_roundtrip():
+    path = [(0, 0), (0, 1), (1, 1)]
+    assert BFS().path_to_directions(path) == ["E", "S"]
 
 
 def main() -> None:
     try:
         solver: PathSolver = PathSolver(maze_generator=DFSearch, algorithm=BFS)
-        solver.solve(width=15, height=15, start=(0, 0), end=(14, 14))
-        # test_path_to_directions_roundtrip()
+        solver.solve(width=2, height=2, start=(0, 0), end=(1, 1))
+        test_path_to_directions_roundtrip()
     except Exception as e:
         print(f"Something went wrong -> {e}")
 
