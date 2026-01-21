@@ -15,7 +15,7 @@ class Finding(Protocol):
         pass
 
 
-# O(1)
+# Time complexity: O(V + E), where V is the number of cells and E is the number of connections between cells
 class BFS:
 
     def pathfind(
