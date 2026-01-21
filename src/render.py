@@ -544,6 +544,7 @@ class Terminal:
 
                     if self.show_path and self.path:
                         self._animate_path()
+                        self._render_current_maze(force_show_path=True)
                     else:
                         self._render_current_maze(force_show_path=False)
 
@@ -601,12 +602,12 @@ class MazeAppManager:
 
 
 def interactive_maze_app(
-    height: int = 14,
-    width: int = 10,
-    entry: tuple[int, int] = (0, 0),
-    exit: tuple[int, int] | None = None,
-    maze_generator_cls: Type[MazeGenerator] = WilsonsAlgorithm,
-    pathfinder_cls: Type[Finding] = BFS,
+    height: int,
+    width: int,
+    entry: tuple[int, int],
+    exit: tuple[int, int] | None,
+    maze_generator_cls: MazeGenerator,
+    pathfinder_cls: Finding,
 ) -> None:
     """Backward-compatible wrapper that launches the terminal UI."""
 
@@ -623,11 +624,13 @@ def interactive_maze_app(
 
 if __name__ == "__main__":
     # Simple manual test entry point
+    conf_height = 20
+    conf_width = 40
     interactive_maze_app(
-        height=30,
-        width=20,
+        height=conf_height,
+        width=conf_width,
         entry=(0, 0),
-        exit=(20, 19),
+        exit=(conf_height - 1, conf_width - 1),
         maze_generator_cls=DFSearch,
         pathfinder_cls=BFS,
     )
