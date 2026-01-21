@@ -1,7 +1,4 @@
-from ast import Tuple
-import pprint
-from turtle import width
-from maze_generator.maze_gen import MazeCell, DFSearch, WilsonsAlgorithm
+from .maze_gen import MazeCell, DFSearch, WilsonsAlgorithm
 from termcolor import colored, cprint
 from pprint import pprint
 
@@ -41,7 +38,7 @@ class MazeParser:
         maze: list[list[MazeCell]],
     ) -> list[tuple[bool]]:
         return [
-            tuple(atr.north, atr.east, atr.south, atr.west)
+            tuple[bool](atr.north, atr.east, atr.south, atr.west)
             for cell in maze
             for atr in cell
         ]
