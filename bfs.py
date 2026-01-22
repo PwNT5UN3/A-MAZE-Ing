@@ -1,21 +1,6 @@
 #!/usr/bin/env python3
 from collections import deque
-from typing import Protocol, runtime_checkable
-from mazegen import DFSearch, MazeCell, MazeGenerator  # noqa 401
-
-
-@runtime_checkable
-class Finding(Protocol):
-
-    def pathfind(
-        self,
-        maze: list[list[MazeCell]],
-        start: tuple[int, int],
-        end: tuple[int, int],
-    ) -> list[tuple[int, int]] | None:
-        pass
-
-    def path_to_directions(self, path: list[tuple[int, int]]) -> list[str]: ...
+from mazegen import MazeCell, MazeGenerator
 
 
 class BFS:
@@ -101,10 +86,10 @@ class BFS:
 class PathSolver:
 
     def __init__(
-        self, maze_generator: type[MazeGenerator], algorithm: type[Finding]
+        self, maze_generator: type[MazeGenerator], algorithm: type
     ) -> None:
         self.maze_generator: type[MazeGenerator] = maze_generator
-        self.algorithm: type[Finding] = algorithm
+        self.algorithm: type = algorithm
 
     def solve(
         self,
@@ -116,7 +101,7 @@ class PathSolver:
         gen: MazeGenerator = self.maze_generator(width=width, height=height)
         maze: list[list[MazeCell]] = gen.generate_maze()
 
-        algorithm: Finding = self.algorithm()
+        algorithm = self.algorithm()
         path: list[tuple[int, int]] | None = algorithm.pathfind(
             maze, start, end
         )

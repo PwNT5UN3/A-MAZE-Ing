@@ -16,22 +16,5 @@ dependencies = [
   "readchar>=3.0.0",
 ]
 
-[tool.setuptools]
-package-dir = { "" = "src" }
-
 [tool.setuptools.packages.find]
-<<<<<<< HEAD
-where = ["src"]
-[project]
-name = "mazegen"
-version = "0.1.0"
-description = "Add your description here"
-readme = "README.md"
-requires-python = ">=3.11"
-dependencies = []
-
-
-[
-=======
-where = ["src"]
->>>>>>> e1e57c4 (removed trash)
+where = ["."]

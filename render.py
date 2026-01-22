@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-from typing import Callable, Literal, Type, Optional
-from mazegen import (  # noqa 401
+from typing import Callable, Literal, Type, Optional, Any
+from mazegen import (
     MazeCell,
     DFSearch,
-    WilsonsAlgorithm,
-    MazeGenerator,  # noqa 401
+    MazeGenerator,
 )
+from bfs import BFS
 from termcolor import colored
 from enum import Enum
-from bfs import BFS, Finding
 from functools import lru_cache
 from output_file_generation import generate_output_file
 import os
@@ -19,8 +18,8 @@ def colorize(
     fourty_two: str = "cyan",
     path_color: Optional[str] = None,
     background: Optional[str] = None,
-    start_color: str = "red",
-    end_color: str = "magenta",
+    start_color: str = "magenta",
+    end_color: str = "red",
     start_marker: str = "E ",
     end_marker: str = "S ",
 ) -> Callable[[str, bool], str]:
@@ -306,7 +305,7 @@ class Terminal:
         self,
         *,
         maze_generator_cls: Type[MazeGenerator],
-        pathfinder_cls: Type[Finding],
+        pathfinder_cls: Type[Any],
         width: int,
         height: int,
         seed: int,
@@ -317,7 +316,7 @@ class Terminal:
         output: str,
     ) -> None:
         self.maze_generator_cls: Type[MazeGenerator] = maze_generator_cls
-        self.pathfinder_cls: Type[Finding] = pathfinder_cls
+        self.pathfinder_cls: Type[Any] = pathfinder_cls
         self.width: int = width
         self.height: int = height
         self.seed: int = seed
@@ -330,9 +329,9 @@ class Terminal:
         self.output: str = output
 
         self.renderer: MazeRenderer = MazeRenderer()
-        self.wall_color: str = "yellow"
-        self.empty_color: str = "cyan"
-        self.path_color: str = "green"
+        self.wall_color: str = "red"
+        self.fourty_two: str = "red"
+        self.path_color: str = "grey"
         self.background: str | None = "on_black"
         self.colorizer = self._build_colorizer()
 
@@ -347,7 +346,7 @@ class Terminal:
     def _build_colorizer(self) -> Callable[[str, bool], str]:
         base = colorize(
             wall_color=self.wall_color,
-            fourty_two=self.empty_color,
+            fourty_two=self.fourty_two,
             path_color=self.path_color,
             background=self.background,
         )
@@ -398,7 +397,7 @@ class Terminal:
             self._clear_screen()
             print("\n=== Color Configuration Menu ===\n")
             print(f"1 - Wall Color: {self.wall_color}")
-            print(f"2 - Empty Color: {self.empty_color}")
+            print(f"2 - 42 Color: {self.fourty_two}")
             print(f"3 - Path Color: {self.path_color}")
             bg_display = (
                 self.background.replace("on_", "")
@@ -539,7 +538,7 @@ class Terminal:
             raise ValueError("Start and end cannot be inside the 42 pattern")
         if not self.perfect:
             generator.make_imperfect()
-        solver: Finding = self.pathfinder_cls()
+        solver = self.pathfinder_cls()
         self.path = solver.pathfind(
             self.maze,
             start=self.entry,
@@ -583,7 +582,6 @@ class Terminal:
         while True:
             try:
                 key = readchar.readchar()
-                print(key)
 
                 match key.lower():
                     case "q":
@@ -634,7 +632,7 @@ class MazeAppManager:
         self,
         *,
         maze_generator_cls: Type[MazeGenerator],
-        pathfinder_cls: Type[Finding],
+        pathfinder_cls: Type[Any],
         width: int,
         height: int,
         seed: int,
@@ -668,7 +666,7 @@ def interactive_maze_app(
     entry: tuple[int, int],
     end: tuple[int, int],
     maze_generator_cls: Type[MazeGenerator],
-    pathfinder_cls: Type[Finding],
+    pathfinder_cls: Type[Any],
     perfect: bool,
     output: str,
 ) -> None:

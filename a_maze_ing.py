@@ -6,7 +6,7 @@ from bfs import BFS
 
 
 def get_int_int_tuple(val_1: int, val_2: int) -> tuple[int, int]:
-    return tuple[int, int]((val_1, val_2))
+    return (val_1, val_2)
 
 
 def main() -> None:
@@ -29,27 +29,27 @@ def main() -> None:
     try:
         configs = read_config(config)
     except Exception as e:
-        print('Error: ', e)
+        print("Error: ", e)
         return
     if configs["algorithm"] == "dfs":
         gen: type[DFSearch | WilsonsAlgorithm] = DFSearch
     else:
         gen = WilsonsAlgorithm
     interactive_maze_app(
-        height=configs["height"],
-        width=configs["width"],
-        entry=tuple[int, int](
-            (int(configs["entry.x"]), int(configs["entry.y"]))
+        height=int(configs["height"]),
+        width=int(configs["width"]),
+        entry=(
+            int(configs["entry.x"]),
+            int(configs["entry.y"]),
         ),
-        end=tuple[int, int]((int(configs["exit.x"]), int(configs["exit.y"]))),
+        end=(int(configs["exit.x"]), int(configs["exit.y"])),
         maze_generator_cls=gen,
         pathfinder_cls=BFS,
         seed=int(configs["seed"]),
-        perfect=configs["perfect"],
+        perfect=bool(configs["perfect"]),
         output=str(configs["output_file"]),
     )
 
 
 if __name__ == "__main__":
     main()
-  

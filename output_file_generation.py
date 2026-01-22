@@ -7,7 +7,7 @@ def generate_output_file(
     start: tuple[int, int],
     end: tuple[int, int],
     filename: str,
-):
+) -> None:
     with open(filename, "w") as file:
         for row in maze:
             for cell in row:

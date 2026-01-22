@@ -1,9 +1,8 @@
-__pycache__/
+__pycache__/*
 *.pyc
 .venv/
 .pyc
 config.txt
-.gitgnore
 .vscode
 tests/
 .pytest_cache/
@@ -11,3 +10,4 @@ tests/
 .DS_Store
 a_maze_ing.egg-info/
 uv.lock
+.mypy_cache

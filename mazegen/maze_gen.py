@@ -1,6 +1,6 @@
 from numpy import random as nprand
 from abc import ABC, abstractmethod
-from typing import List, Tuple, Dict
+from typing import List, Dict, Tuple
 from dataclasses import dataclass, asdict, fields
 
 
@@ -11,7 +11,7 @@ class MazeCell:
     east: bool
     west: bool
     fourty_two_pattern: bool
-    coordinates: Tuple[int, ...]
+    coordinates: Tuple[int, int]
 
 
 class MazeGenerator(ABC):
@@ -35,29 +35,30 @@ class MazeGenerator(ABC):
         print("Maze is too small to fit the 42 pattern, omitting it!")
         return False
 
-    def get_pattern_coords(self) -> List[tuple]:
-        coordinates = []
-        upper_left = tuple(
-            [int((self.height - 5) / 2), int((self.width - 7) / 2)]
+    def get_pattern_coords(self) -> List[Tuple[int, int]]:
+        coordinates: List[Tuple[int, int]] = []
+        upper_left: tuple[int, int] = (
+            int((self.height - 5) / 2),
+            int((self.width - 7) / 2),
         )
         coordinates.append(upper_left)
-        coordinates.append(tuple([upper_left[0] + 1, upper_left[1]]))
-        coordinates.append(tuple([upper_left[0] + 2, upper_left[1]]))
-        coordinates.append(tuple([upper_left[0] + 2, upper_left[1] + 1]))
-        coordinates.append(tuple([upper_left[0] + 2, upper_left[1] + 2]))
-        coordinates.append(tuple([upper_left[0] + 3, upper_left[1] + 2]))
-        coordinates.append(tuple([upper_left[0] + 4, upper_left[1] + 2]))
-        coordinates.append(tuple([upper_left[0], upper_left[1] + 4]))
-        coordinates.append(tuple([upper_left[0] + 2, upper_left[1] + 4]))
-        coordinates.append(tuple([upper_left[0] + 3, upper_left[1] + 4]))
-        coordinates.append(tuple([upper_left[0] + 4, upper_left[1] + 4]))
-        coordinates.append(tuple([upper_left[0], upper_left[1] + 5]))
-        coordinates.append(tuple([upper_left[0] + 2, upper_left[1] + 5]))
-        coordinates.append(tuple([upper_left[0] + 4, upper_left[1] + 5]))
-        coordinates.append(tuple([upper_left[0], upper_left[1] + 6]))
-        coordinates.append(tuple([upper_left[0] + 1, upper_left[1] + 6]))
-        coordinates.append(tuple([upper_left[0] + 2, upper_left[1] + 6]))
-        coordinates.append(tuple([upper_left[0] + 4, upper_left[1] + 6]))
+        coordinates.append((upper_left[0] + 1, upper_left[1]))
+        coordinates.append((upper_left[0] + 2, upper_left[1]))
+        coordinates.append((upper_left[0] + 2, upper_left[1] + 1))
+        coordinates.append((upper_left[0] + 2, upper_left[1] + 2))
+        coordinates.append((upper_left[0] + 3, upper_left[1] + 2))
+        coordinates.append((upper_left[0] + 4, upper_left[1] + 2))
+        coordinates.append((upper_left[0], upper_left[1] + 4))
+        coordinates.append((upper_left[0] + 2, upper_left[1] + 4))
+        coordinates.append((upper_left[0] + 3, upper_left[1] + 4))
+        coordinates.append((upper_left[0] + 4, upper_left[1] + 4))
+        coordinates.append((upper_left[0], upper_left[1] + 5))
+        coordinates.append((upper_left[0] + 2, upper_left[1] + 5))
+        coordinates.append((upper_left[0] + 4, upper_left[1] + 5))
+        coordinates.append((upper_left[0], upper_left[1] + 6))
+        coordinates.append((upper_left[0] + 1, upper_left[1] + 6))
+        coordinates.append((upper_left[0] + 2, upper_left[1] + 6))
+        coordinates.append((upper_left[0] + 4, upper_left[1] + 6))
         return coordinates
 
     def create_maze_canvas(self) -> List[List[MazeCell]]:
@@ -73,7 +74,7 @@ class MazeGenerator(ABC):
                             False,
                             False,
                             True,
-                            tuple([lane, cell]),
+                            (lane, cell),
                         )
                     )
                 else:
@@ -84,38 +85,37 @@ class MazeGenerator(ABC):
                             False,
                             False,
                             False,
-                            tuple([lane, cell]),
+                            (lane, cell),
                         )
                     )
             canvas.append(row)
         self._cell_map = {c.coordinates: c for r in canvas for c in r}
         return canvas
 
-    def get_all_coords(self) -> List[tuple]:
+    def get_all_coords(self) -> List[tuple[int, int]]:
         coords = []
         for row in self.maze:
             for cell in row:
                 coords.append(cell.coordinates)
         return coords
 
-    def remove_cell_from_array(self, cell: tuple, array: List[List]) -> None:
+    def remove_cell_from_array(
+        self, cell: tuple[int, int], array: List[List[tuple[int, int]]]
+    ) -> None:
         for row in array:
             if cell in row:
                 row.remove(cell)
 
-    def get_maze_cell_from_coordinate(self, coordinate: tuple) -> MazeCell:
-        # for row in self.maze:
-        #     for cell in row:
-        #         if cell.coordinates == coordinate:
-        #             return cell
-        # raise ValueError("Unexpected Error")
+    def get_maze_cell_from_coordinate(
+        self, coordinate: tuple[int, int]
+    ) -> MazeCell:
         try:
             return self._cell_map[coordinate]
         except KeyError:
             raise ValueError("Unexpected Error")
 
     def get_available_cells(
-        self, current_cell: MazeCell, available: list
+        self, current_cell: MazeCell, available: list[tuple[int, int]]
     ) -> Dict[str, MazeCell]:
         cells = {}
         north = (current_cell.coordinates[0] - 1, current_cell.coordinates[1])
@@ -187,22 +187,22 @@ class MazeGenerator(ABC):
                 if choice == "north":
                     cell.north = True
                     self.get_maze_cell_from_coordinate(
-                        tuple([cell.coordinates[0] - 1, cell.coordinates[1]])
+                        (cell.coordinates[0] - 1, cell.coordinates[1])
                     ).south = True
                 if choice == "south":
                     cell.south = True
                     self.get_maze_cell_from_coordinate(
-                        tuple([cell.coordinates[0] + 1, cell.coordinates[1]])
+                        (cell.coordinates[0] + 1, cell.coordinates[1])
                     ).north = True
                 if choice == "west":
                     cell.west = True
                     self.get_maze_cell_from_coordinate(
-                        tuple([cell.coordinates[0], cell.coordinates[1] - 1])
+                        (cell.coordinates[0], cell.coordinates[1] - 1)
                     ).east = True
                 if choice == "east":
                     cell.east = True
                     self.get_maze_cell_from_coordinate(
-                        tuple([cell.coordinates[0], cell.coordinates[1] + 1])
+                        (cell.coordinates[0], cell.coordinates[1] + 1)
                     ).west = True
 
     @abstractmethod
@@ -222,13 +222,10 @@ class WilsonsAlgorithm(MazeGenerator):
         unvisited = available.copy()
         existing_maze = set()
         first_maze_cell_np = tuple(self.rng.choice(available))
-        existing_maze.add(
-            tuple([int(first_maze_cell_np[0]), int(first_maze_cell_np[1])])
-        )
-        unvisited.remove(
-            tuple([int(first_maze_cell_np[0]), int(first_maze_cell_np[1])])
-        )
-        move_stack: list = []
+        cell_coords = (int(first_maze_cell_np[0]), int(first_maze_cell_np[1]))
+        existing_maze.add(cell_coords)
+        unvisited.remove(cell_coords)
+        move_stack: list[tuple[int, int]] = []
         movements: List[str] = []
 
         def add_walk_to_maze() -> None:
@@ -277,7 +274,10 @@ class WilsonsAlgorithm(MazeGenerator):
 
         while len(unvisited) != 0:
             walk_start_np = tuple(self.rng.choice(unvisited))
-            walk_start = tuple([int(walk_start_np[0]), int(walk_start_np[1])])
+            walk_start: tuple[int, int] = (
+                int(walk_start_np[0]),
+                int(walk_start_np[1]),
+            )
             move_stack.append(walk_start)
             walk_ended = random_looperased_walk(
                 self.get_maze_cell_from_coordinate(walk_start)
@@ -301,7 +301,7 @@ class DFSearch(MazeGenerator):
         for pattern_cell in self.pattern_coordinates:
             available.remove(pattern_cell)
         start_np = tuple(self.rng.choice(available))
-        start = tuple([int(start_np[0]), int(start_np[1])])
+        start: tuple[int, int] = (int(start_np[0]), int(start_np[1]))
         available.remove(start)
         move_stack = []
         move_stack.append(start)

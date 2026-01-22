@@ -1,4 +1,4 @@
-def read_config(config_file: "str") -> dict:
+def read_config(config_file: "str") -> dict[str, str | int | bool]:
     required = set(
         ["width", "height", "entry.x", "entry.y", "exit.x", "exit.y"]
     )
@@ -6,7 +6,7 @@ def read_config(config_file: "str") -> dict:
     with open(config_file) as config:
         for line in config:
             line = line.strip().lower()
-            if line.startswith("#") or line.strip() == '':
+            if line.startswith("#") or line.strip() == "":
                 continue
             if "=" not in line:
                 raise ValueError("Non-Comments must be declarations with =")
@@ -82,9 +82,10 @@ def read_config(config_file: "str") -> dict:
                 if val == "":
                     val = "-1"
                 try:
-                    if int(val) < 0 or int(val) > 2147483647:
-                        val = "-1"
-                    configs["seed"] = val
+                    seed_val = int(val)
+                    if seed_val < 0 or seed_val > 2147483647:
+                        seed_val = -1
+                    configs["seed"] = seed_val
                 except Exception:
                     raise ValueError(
                         "I'm too lazy to support multiple seed "
