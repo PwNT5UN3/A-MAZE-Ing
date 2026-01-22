@@ -10,6 +10,7 @@ from termcolor import colored
 from enum import Enum
 from src.bfs import BFS, Finding
 from functools import lru_cache
+from io import StringIO
 
 import os
 
@@ -615,7 +616,7 @@ class MazeAppManager:
         height: int,
         entry: tuple[int, int],
         end: tuple[int, int],
-        delay: float = 0.02,
+        delay: float = 0.25,
     ) -> None:
         self.terminal: Terminal = Terminal(
             maze_generator_cls=maze_generator_cls,
@@ -653,13 +654,13 @@ def interactive_maze_app(
 
 
 if __name__ == "__main__":
-    conf_height = 20
-    conf_width = 20
+    conf_height = 50
+    conf_width = 50
     interactive_maze_app(
         height=conf_height,
         width=conf_width,
         entry=(0, 0),
         end=(conf_height - 1, conf_width - 1),
-        maze_generator_cls=WilsonsAlgorithm,
+        maze_generator_cls=DFSearch,
         pathfinder_cls=BFS,
     )
