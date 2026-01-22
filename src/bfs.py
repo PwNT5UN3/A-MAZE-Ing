@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from collections import deque
 from typing import Protocol, runtime_checkable
-from src.maze_gen import DFSearch, MazeCell, MazeGenerator
+from src.maze_gen import DFSearch, MazeCell, MazeGenerator  # noqa 401
 
 
 @runtime_checkable
@@ -128,16 +128,3 @@ class PathSolver:
             print("Path coordinates:", path)
         else:
             print("No path found!")
-
-
-# def main() -> None:
-#     try:
-#         solver: PathSolver = PathSolver(maze_generator=DFSearch, algorithm=BFS)
-#         solver.solve(width=2, height=2, start=(0, 0), end=(1, 1))
-#         test_path_to_directions_roundtrip()
-#     except Exception as e:
-#         print(f"Something went wrong -> {e}")
-
-
-# if __name__ == "__main__":
-#     main()

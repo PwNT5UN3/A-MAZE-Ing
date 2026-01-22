@@ -599,7 +599,8 @@ class Terminal:
                         else:
                             self._clear_screen()
                             print(
-                                "Colors updated! Press SPACE to generate a maze.\n"
+                                "Colors updated! Press SPACE to "
+                                + "generate a maze.\n"
                             )
 
             except KeyboardInterrupt:
