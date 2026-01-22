@@ -34,6 +34,7 @@ class MazeGenerator(ABC):
     def check_42_pattern_avilability(self) -> bool:
         if self.width >= 14 and self.height >= 10:
             return True
+        print("Maze is too small to fit the 42 pattern, omitting it!")
         return False
 
     def get_pattern_coords(self) -> List[tuple]:
