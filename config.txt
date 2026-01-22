@@ -4,5 +4,5 @@ HEIGHT=3
 entry  =   4,2
 exit =   4,2
 output_file=
-seed=1
+seed=   423
 algorithm=wilson

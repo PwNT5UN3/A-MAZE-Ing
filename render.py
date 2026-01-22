@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from typing import Callable, Literal, Type, Optional
-from src.maze_gen import (  # noqa 401
+from mazegen import (  # noqa 401
     MazeCell,
     DFSearch,
     WilsonsAlgorithm,
@@ -8,9 +8,8 @@ from src.maze_gen import (  # noqa 401
 )
 from termcolor import colored
 from enum import Enum
-from src.bfs import BFS, Finding
+from bfs import BFS, Finding
 from functools import lru_cache
-from io import StringIO
 
 import os
 
@@ -310,6 +309,7 @@ class Terminal:
         pathfinder_cls: Type[Finding],
         width: int,
         height: int,
+        seed: int,
         entry: tuple[int, int],
         end: tuple[int, int],
         delay: float,
@@ -318,6 +318,7 @@ class Terminal:
         self.pathfinder_cls: Type[Finding] = pathfinder_cls
         self.width: int = width
         self.height: int = height
+        self.seed: int = seed
         self.entry: tuple[int, int] = entry
         self.exit: tuple[int, int] = (
             end if end is not None else (height - 1, width - 1)
@@ -522,8 +523,9 @@ class Terminal:
 
     def _generate_maze_and_path(self) -> None:
         generator: MazeGenerator = self.maze_generator_cls(
-            width=self.width, height=self.height
+            width=self.width, height=self.height, seed=self.seed
         )
+        print("making maze")
         self.maze = generator.generate_maze()
 
         solver: Finding = self.pathfinder_cls()
@@ -561,6 +563,7 @@ class Terminal:
         while True:
             try:
                 key = readchar.readchar()
+                print(key)
 
                 match key.lower():
                     case "q":
@@ -614,6 +617,7 @@ class MazeAppManager:
         pathfinder_cls: Type[Finding],
         width: int,
         height: int,
+        seed: int,
         entry: tuple[int, int],
         end: tuple[int, int],
         delay: float = 0.25,
@@ -626,6 +630,7 @@ class MazeAppManager:
             entry=entry,
             end=end,
             delay=delay,
+            seed=seed,
         )
 
     def run(self) -> None:
@@ -635,6 +640,7 @@ class MazeAppManager:
 def interactive_maze_app(
     height: int,
     width: int,
+    seed: int,
     entry: tuple[int, int],
     end: tuple[int, int],
     maze_generator_cls: Type[MazeGenerator],
@@ -647,6 +653,7 @@ def interactive_maze_app(
         pathfinder_cls=pathfinder_cls,
         width=width,
         height=height,
+        seed=seed,
         entry=entry,
         end=end,
     )
@@ -656,9 +663,11 @@ def interactive_maze_app(
 if __name__ == "__main__":
     conf_height = 50
     conf_width = 50
+    seed = -1
     interactive_maze_app(
         height=conf_height,
         width=conf_width,
+        seed=seed,
         entry=(0, 0),
         end=(conf_height - 1, conf_width - 1),
         maze_generator_cls=DFSearch,

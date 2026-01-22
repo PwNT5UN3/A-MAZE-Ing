@@ -17,14 +17,12 @@ class MazeCell:
 class MazeGenerator(ABC):
     """The core maze generator"""
 
-    def __init__(
-        self, height: int, width: int, *, seed: int | None = None
-    ) -> None:
-        if seed is None:
+    def __init__(self, height: int, width: int, *, seed: int = -1) -> None:
+        if seed == -1:
             seed = nprand.randint(0, high=2147483647)
         self.rng = nprand.Generator(nprand.MT19937(seed=seed))
-        self.width = width
-        self.height = height
+        self.width: int = int(width)
+        self.height: int = int(height)
         if self.check_42_pattern_avilability():
             self.pattern_coordinates = self.get_pattern_coords()
         else:
@@ -32,7 +30,7 @@ class MazeGenerator(ABC):
         self.maze = self.create_maze_canvas()
 
     def check_42_pattern_avilability(self) -> bool:
-        if self.width >= 14 and self.height >= 10:
+        if int(self.width) >= 14 and int(self.height) >= 10:
             return True
         print("Maze is too small to fit the 42 pattern, omitting it!")
         return False

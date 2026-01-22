@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from collections import deque
 from typing import Protocol, runtime_checkable
-from src.maze_gen import DFSearch, MazeCell, MazeGenerator  # noqa 401
+from mazegen import DFSearch, MazeCell, MazeGenerator  # noqa 401
 
 
 @runtime_checkable
