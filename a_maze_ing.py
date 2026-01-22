@@ -26,7 +26,11 @@ def main() -> None:
     except PermissionError:
         print("Config file cannot be read. Aborting...")
         return
-    configs = read_config(config)
+    try:
+        configs = read_config(config)
+    except Exception as e:
+        print('Error: ', e)
+        return
     if configs["algorithm"] == "dfs":
         gen: type[DFSearch | WilsonsAlgorithm] = DFSearch
     else:
@@ -48,3 +52,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+  

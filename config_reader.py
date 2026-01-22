@@ -6,7 +6,7 @@ def read_config(config_file: "str") -> dict:
     with open(config_file) as config:
         for line in config:
             line = line.strip().lower()
-            if line.startswith("#"):
+            if line.startswith("#") or line.strip() == '':
                 continue
             if "=" not in line:
                 raise ValueError("Non-Comments must be declarations with =")
