@@ -27,7 +27,6 @@ def main() -> None:
         print("Config file cannot be read. Aborting...")
         return
     configs = read_config(config)
-    print(configs)
     if configs["algorithm"] == "dfs":
         gen: type[DFSearch | WilsonsAlgorithm] = DFSearch
     else:
@@ -45,12 +44,6 @@ def main() -> None:
         perfect=configs["perfect"],
         output=str(configs["output_file"]),
     )
-
-
-# gen2 = DFSearch(50, 50)
-# maze2 = gen2.generate_maze()
-# check_perfection(gen, maze)
-# check_perfection(gen2, maze2)
 
 
 if __name__ == "__main__":
