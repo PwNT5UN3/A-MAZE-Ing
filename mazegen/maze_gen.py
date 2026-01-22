@@ -191,10 +191,10 @@ class MazeGenerator(ABC):
                         tuple([cell.coordinates[0] - 1, cell.coordinates[1]])
                     ).south = True
                 if choice == "south":
-                    cell.north = True
+                    cell.south = True
                     self.get_maze_cell_from_coordinate(
                         tuple([cell.coordinates[0] + 1, cell.coordinates[1]])
-                    ).south = True
+                    ).north = True
                 if choice == "west":
                     cell.west = True
                     self.get_maze_cell_from_coordinate(
