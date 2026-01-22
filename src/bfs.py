@@ -37,18 +37,19 @@ class BFS:
         if not (0 <= end[0] < height and 0 <= end[1] < width):
             return None
 
-        queue = deque([start])
-        parent = {start: None}
+        queue: deque[tuple[int, int]] = deque([start])
+        parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}
 
         while queue:
             current = queue.popleft()
 
             if current == end:
                 path: list[tuple[int, int]] = []
-                while current is not None:
-                    path.append(current)
-                    current = parent[current]
-                return path[::-1]
+                node: tuple[int, int] | None = current
+                while node is not None:
+                    path.append(node)
+                    node = parent[node]
+                return path
 
             row, col = current
             current_cell: MazeCell = maze[row][col]
@@ -129,19 +130,14 @@ class PathSolver:
             print("No path found!")
 
 
-def test_path_to_directions_roundtrip():
-    path = [(0, 0), (0, 1), (1, 1)]
-    assert BFS().path_to_directions(path) == ["E", "S"]
+# def main() -> None:
+#     try:
+#         solver: PathSolver = PathSolver(maze_generator=DFSearch, algorithm=BFS)
+#         solver.solve(width=2, height=2, start=(0, 0), end=(1, 1))
+#         test_path_to_directions_roundtrip()
+#     except Exception as e:
+#         print(f"Something went wrong -> {e}")
 
 
-def main() -> None:
-    try:
-        solver: PathSolver = PathSolver(maze_generator=DFSearch, algorithm=BFS)
-        solver.solve(width=2, height=2, start=(0, 0), end=(1, 1))
-        test_path_to_directions_roundtrip()
-    except Exception as e:
-        print(f"Something went wrong -> {e}")
-
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

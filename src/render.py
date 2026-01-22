@@ -9,6 +9,8 @@ from src.maze_gen import (  # noqa 401
 from termcolor import colored
 from enum import Enum
 from src.bfs import BFS, Finding
+from functools import lru_cache
+
 import os
 
 
@@ -19,8 +21,8 @@ def colorize(
     background: Optional[str] = None,
     start_color: str = "red",
     end_color: str = "magenta",
-    start_marker: str = "S",
-    end_marker: str = "E",
+    start_marker: str = "S ",
+    end_marker: str = "E ",
 ) -> Callable[[str, bool], str]:
     """Create a colorizer function for maze rendering.
 
@@ -37,15 +39,14 @@ def colorize(
     """
 
     def _colorize(text: str, is_wall: bool) -> str:
-        stripped = text.strip()
 
-        if path_color and stripped == "░░":
+        if path_color and text == "░░":
             return colored(text, path_color, background)
 
-        if stripped == start_marker:
+        if text == start_marker:
             return colored(text, start_color, background)
 
-        if stripped == end_marker:
+        if text == end_marker:
             return colored(text, end_color, background)
 
         color: str = wall_color if is_wall else fourty_two
@@ -82,23 +83,16 @@ class Characters(Enum):
         self.tuple: tuple[bool, bool, bool, bool] = tpl
         self.char: str = char
 
-    @classmethod
-    def from_tuple(cls, tpl: tuple[bool, bool, bool, bool]) -> "Characters":
-        """Return the matching Characters member for a (n,s,e,w) tuple."""
-        for member in cls:
-            if member.tuple == tpl:
-                return member
-        return cls.NONE
-
 
 class MazeRenderer:
+
     def __init__(self) -> None:
         self.char_map: dict[tuple[bool, bool, bool, bool], str] = {
             member.tuple: member.char for member in Characters
         }
 
     def get_wall_char(self, n: bool, s: bool, e: bool, w: bool) -> str:
-        return Characters.from_tuple((n, s, e, w)).char
+        return self.char_map.get((n, s, e, w), Characters.NONE.char)
 
     def render_maze_walls(
         self,
@@ -156,11 +150,6 @@ class MazeRenderer:
                 if cell.south:
                     is_wall[center_r + 1][center_c] = False
 
-                # initialize any special content cell with blanks for now
-                content_grid[center_r][center_c] = content_grid[center_r][
-                    center_c
-                ]
-
     def _apply_forty_two_pattern(
         self,
         maze: list[list[MazeCell]],
@@ -173,9 +162,7 @@ class MazeRenderer:
                 cell: MazeCell = maze[r][c]
                 if not cell.fourty_two_pattern:
                     continue
-
-                center_r, center_c = r * 2 + 1, c * 2 + 1
-                content_grid[center_r][center_c] = "▓▓"
+                content_grid[r * 2 + 1][c * 2 + 1] = "▓▓"
 
     def _apply_solved_path(
         self,
@@ -248,29 +235,51 @@ class MazeRenderer:
         grid_w: int,
         colorizer: Callable[[str, bool], str] | None,
     ) -> str:
-        lines: list[str] = []
-        for r in range(grid_h):
-            line_chars: list[str] = []
-            for c in range(grid_w):
-                if is_wall[r][c]:
-                    n: bool = r > 0 and is_wall[r - 1][c]
-                    s: bool = r < grid_h - 1 and is_wall[r + 1][c]
-                    w: bool = c > 0 and is_wall[r][c - 1]
-                    e: bool = c < grid_w - 1 and is_wall[r][c + 1]
+        cache: dict[tuple[str, bool], str] = {}
 
-                    base_char = self.get_wall_char(n, s, e, w)
+        lines: list[str] = []
+        col = colorizer
+        iw = is_wall
+        cg = content_grid
+        gh = grid_h
+        gw = grid_w
+        get_char = self.get_wall_char
+
+        for r in range(gh):
+            is_wall_r = iw[r]
+            line_chars: list[str] = []
+            for c in range(gw):
+                if is_wall_r[c]:
+                    # neighbors (are those positions walls?)
+                    n: bool = r > 0 and iw[r - 1][c]
+                    s: bool = r < gh - 1 and iw[r + 1][c]
+                    w: bool = c > 0 and is_wall_r[c - 1]
+                    e: bool = c < gw - 1 and is_wall_r[c + 1]
+
+                    base_char = get_char(n, s, e, w)
                     padding: Literal["─", " "] = "─" if e else " "
                     rendered = base_char + padding
 
-                    if colorizer:
-                        rendered = colorizer(rendered, True)
-
-                    line_chars.append(rendered)
+                    if col:
+                        key = (rendered, True)
+                        colored_rendered = cache.get(key)
+                        if colored_rendered is None:
+                            colored_rendered = col(rendered, True)
+                            cache[key] = colored_rendered
+                        line_chars.append(colored_rendered)
+                    else:
+                        line_chars.append(rendered)
                 else:
-                    rendered = content_grid[r][c]
-                    if colorizer:
-                        rendered = colorizer(rendered, False)
-                    line_chars.append(rendered)
+                    rendered = cg[r][c]
+                    if col:
+                        key = (rendered, False)
+                        colored_rendered = cache.get(key)
+                        if colored_rendered is None:
+                            colored_rendered = col(rendered, False)
+                            cache[key] = colored_rendered
+                        line_chars.append(colored_rendered)
+                    else:
+                        line_chars.append(rendered)
             lines.append("".join(line_chars))
 
         return "\n".join(lines)
@@ -279,16 +288,38 @@ class MazeRenderer:
 class Terminal:
     """Interactive terminal driver with configurable algorithms and sizing."""
 
+    COLORS: dict[str, str] = {
+        "1": "red",
+        "2": "green",
+        "3": "yellow",
+        "4": "blue",
+        "5": "magenta",
+        "6": "cyan",
+        "7": "white",
+        "8": "grey",
+    }
+
+    BACKGROUND_COLORS: dict[str, str | None] = {
+        "1": None,
+        "2": "on_red",
+        "3": "on_green",
+        "4": "on_yellow",
+        "5": "on_blue",
+        "6": "on_magenta",
+        "7": "on_cyan",
+        "8": "on_white",
+    }
+
     def __init__(
         self,
         *,
-        maze_generator_cls: Type[MazeGenerator] = WilsonsAlgorithm,
-        pathfinder_cls: Type[Finding] = BFS,
-        width: int = 10,
-        height: int = 14,
-        entry: tuple[int, int] = (0, 0),
-        exit: tuple[int, int] | None = None,
-        delay: float = 0.02,
+        maze_generator_cls: Type[MazeGenerator],
+        pathfinder_cls: Type[Finding],
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        end: tuple[int, int],
+        delay: float,
     ) -> None:
         self.maze_generator_cls: Type[MazeGenerator] = maze_generator_cls
         self.pathfinder_cls: Type[Finding] = pathfinder_cls
@@ -296,7 +327,7 @@ class Terminal:
         self.height: int = height
         self.entry: tuple[int, int] = entry
         self.exit: tuple[int, int] = (
-            exit if exit is not None else (height - 1, width - 1)
+            end if end is not None else (height - 1, width - 1)
         )
         self.delay: float = delay
 
@@ -313,30 +344,47 @@ class Terminal:
 
     @staticmethod
     def _clear_screen() -> None:
-        os.system("clear" if os.name != "nt" else "cls")
+        os.system("clear")
 
     def _build_colorizer(self) -> Callable[[str, bool], str]:
-        return colorize(
+        base = colorize(
             wall_color=self.wall_color,
             fourty_two=self.empty_color,
             path_color=self.path_color,
             background=self.background,
         )
 
+        @lru_cache(maxsize=None)
+        def cached(text: str, is_wall: bool) -> str:
+            return base(text, is_wall)
+
+        return cached
+
     def _select_color_from_list(
-        self, colors: list[str], prompt: str
+        self, colors: tuple[str, ...] | list[str], prompt: str
     ) -> str | None:
+        """Select a color from a list/tuple of color names.
+
+        Args:
+            colors: Sequence of color names
+            prompt: Display prompt for the selection menu
+
+        Returns:
+            Selected color name or None if selection is invalid
+        """
         import readchar
 
         self._clear_screen()
         print(f"{prompt}\n")
         for idx, color_name in enumerate(colors, 1):
             print(f"  {idx}. {colored(color_name, color_name)}")
+
         choice = readchar.readchar()
-        try:
-            return colors[int(choice) - 1]
-        except (ValueError, IndexError):
+        if not choice.isdigit():
             return None
+
+        idx = int(choice) - 1
+        return colors[idx] if 0 <= idx < len(colors) else None
 
     def _color_menu(self) -> None:
         try:
@@ -347,27 +395,6 @@ class Terminal:
                 + "pip install readchar"
             )
             return
-
-        colors = [
-            "red",
-            "green",
-            "yellow",
-            "blue",
-            "magenta",
-            "cyan",
-            "white",
-            "grey",
-        ]
-        background_colors = [
-            None,
-            "on_red",
-            "on_green",
-            "on_yellow",
-            "on_blue",
-            "on_magenta",
-            "on_cyan",
-            "on_white",
-        ]
 
         while True:
             self._clear_screen()
@@ -388,51 +415,53 @@ class Terminal:
             try:
                 key: str = readchar.readchar()
 
-                if key == "1":
-                    selected = self._select_color_from_list(
-                        colors, "Select Wall Color:"
-                    )
-                    if selected:
-                        self.wall_color = selected
+                match key:
+                    case "1":
+                        selected = self._select_color_from_list(
+                            list(self.COLORS.values()), "Select Wall Color:"
+                        )
+                        if selected:
+                            self.wall_color = selected
 
-                elif key == "2":
-                    selected = self._select_color_from_list(
-                        colors, "Select Empty Space Color:"
-                    )
-                    if selected:
-                        self.empty_color = selected
+                    case "2":
+                        selected = self._select_color_from_list(
+                            list(self.COLORS.values()),
+                            "Select 42 Color:",
+                        )
+                        if selected:
+                            self.empty_color = selected
 
-                elif key == "3":
-                    selected = self._select_color_from_list(
-                        colors, "Select Path Color:"
-                    )
-                    if selected:
-                        self.path_color = selected
+                    case "3":
+                        selected = self._select_color_from_list(
+                            list(self.COLORS.values()), "Select Path Color:"
+                        )
+                        if selected:
+                            self.path_color = selected
 
-                elif key == "4":
-                    self._clear_screen()
-                    print("Select Background Color:\n")
-                    print("  1. None (Default)")
-                    for idx, bg in enumerate(background_colors[1:], 2):
-                        if bg:
-                            bg_name = bg.replace("on_", "")
-                            print(f"  {idx}. {colored(bg_name, 'white', bg)}")
-                    choice: str = readchar.readchar()
-                    try:
-                        _: int = int(choice) - 1
-                        self.background = background_colors[_]
-                    except (ValueError, IndexError):
-                        pass
+                    case "4":
+                        self._clear_screen()
+                        print("Select Background Color:\n")
+                        for key, bg in self.BACKGROUND_COLORS.items():
+                            if bg is None:
+                                print("  1. None (Default)")
+                            else:
+                                bg_name = bg.replace("on_", "")
+                                print(
+                                    f"  {key}. {colored(bg_name, 'white', bg)}"
+                                )
+                        choice: str = readchar.readchar()
+                        if choice in self.BACKGROUND_COLORS:
+                            self.background = self.BACKGROUND_COLORS[choice]
 
-                elif key == "5" and self.maze:
-                    self.colorizer = self._build_colorizer()
-                    self._render_current_maze(force_show_path=True)
-                    print("\nPress any key to return to color menu...")
-                    readchar.readchar()
+                    case "5" if self.maze:
+                        self.colorizer = self._build_colorizer()
+                        self._render_current_maze(force_show_path=True)
+                        print("\nPress any key to return to color menu...")
+                        readchar.readchar()
 
-                elif key == "0":
-                    self.colorizer = self._build_colorizer()
-                    return
+                    case "0":
+                        self.colorizer = self._build_colorizer()
+                        return
 
             except KeyboardInterrupt:
                 self.colorizer = self._build_colorizer()
@@ -473,7 +502,7 @@ class Terminal:
             print("No path to animate")
             return
 
-        path_steps = self.path[::-1]
+        path_steps = self.path
 
         rendered = self.renderer.render_maze_walls(
             self.maze,
@@ -540,37 +569,38 @@ class Terminal:
             try:
                 key = readchar.readchar()
 
-                if key.lower() == "q":
-                    print("\nGoodbye!")
-                    break
+                match key.lower():
+                    case "q":
+                        print("\nGoodbye!")
+                        break
 
-                if key == " ":
-                    self._clear_screen()
-                    print("Generating maze...\n")
-                    self._generate_maze_and_path()
-
-                    if self.show_path and self.path:
-                        self._animate_path()
-                        self._render_current_maze(force_show_path=True)
-                    else:
-                        self._render_current_maze(force_show_path=False)
-
-                elif key.lower() == "p":
-                    if self.maze is None:
-                        print("Generate a maze first! (Press SPACE)")
-                        continue
-                    self.show_path = not self.show_path
-                    self._render_current_maze()
-
-                elif key.lower() == "c":
-                    self._color_menu()
-                    if self.maze:
-                        self._render_current_maze()
-                    else:
+                    case " ":
                         self._clear_screen()
-                        print(
-                            "Colors updated! Press SPACE to generate a maze.\n"
-                        )
+                        print("Generating maze...\n")
+                        self._generate_maze_and_path()
+
+                        if self.show_path and self.path:
+                            self._animate_path()
+                            self._render_current_maze(force_show_path=True)
+                        else:
+                            self._render_current_maze(force_show_path=False)
+
+                    case "p":
+                        if self.maze is None:
+                            print("Generate a maze first! (Press SPACE)")
+                            continue
+                        self.show_path = not self.show_path
+                        self._render_current_maze()
+
+                    case "c":
+                        self._color_menu()
+                        if self.maze:
+                            self._render_current_maze()
+                        else:
+                            self._clear_screen()
+                            print(
+                                "Colors updated! Press SPACE to generate a maze.\n"
+                            )
 
             except KeyboardInterrupt:
                 print("\n\nInterrupted. Goodbye!")
@@ -586,12 +616,12 @@ class MazeAppManager:
     def __init__(
         self,
         *,
-        maze_generator_cls: Type[MazeGenerator] = WilsonsAlgorithm,
-        pathfinder_cls: Type[Finding] = BFS,
-        width: int = 10,
-        height: int = 14,
-        entry: tuple[int, int] = (0, 0),
-        exit: Optional[tuple[int, int]] = None,
+        maze_generator_cls: Type[MazeGenerator],
+        pathfinder_cls: Type[Finding],
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        end: tuple[int, int],
         delay: float = 0.02,
     ) -> None:
         self.terminal: Terminal = Terminal(
@@ -600,7 +630,7 @@ class MazeAppManager:
             width=width,
             height=height,
             entry=entry,
-            exit=exit,
+            end=end,
             delay=delay,
         )
 
@@ -609,12 +639,12 @@ class MazeAppManager:
 
 
 def interactive_maze_app(
-    height: int = 14,
-    width: int = 10,
-    entry: tuple[int, int] = (0, 0),
-    exit: Optional[tuple[int, int]] = None,
-    maze_generator_cls: Type[MazeGenerator] = WilsonsAlgorithm,
-    pathfinder_cls: Type[Finding] = BFS,
+    height: int,
+    width: int,
+    entry: tuple[int, int],
+    end: tuple[int, int],
+    maze_generator_cls: Type[MazeGenerator],
+    pathfinder_cls: Type[Finding],
 ) -> None:
     """Backward-compatible wrapper that launches the terminal UI."""
 
@@ -624,19 +654,19 @@ def interactive_maze_app(
         width=width,
         height=height,
         entry=entry,
-        exit=exit,
+        end=end,
     )
     manager.run()
 
 
 if __name__ == "__main__":
-    conf_height = 14
-    conf_width = 14
+    conf_height = 20
+    conf_width = 20
     interactive_maze_app(
         height=conf_height,
         width=conf_width,
         entry=(0, 0),
-        exit=(conf_height - 1, conf_width - 1),
+        end=(conf_height - 1, conf_width - 1),
         maze_generator_cls=WilsonsAlgorithm,
         pathfinder_cls=BFS,
     )
