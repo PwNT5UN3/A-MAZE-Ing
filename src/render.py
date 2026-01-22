@@ -236,46 +236,38 @@ class MazeRenderer:
         colorizer: Callable[[str, bool], str] | None,
     ) -> str:
         cache: dict[tuple[str, bool], str] = {}
-
         lines: list[str] = []
-        col = colorizer
-        iw = is_wall
-        cg = content_grid
-        gh = grid_h
-        gw = grid_w
-        get_char = self.get_wall_char
 
-        for r in range(gh):
-            is_wall_r = iw[r]
+        for r in range(grid_h):
+            is_wall_r = is_wall[r]
             line_chars: list[str] = []
-            for c in range(gw):
+            for c in range(grid_w):
                 if is_wall_r[c]:
-                    # neighbors (are those positions walls?)
-                    n: bool = r > 0 and iw[r - 1][c]
-                    s: bool = r < gh - 1 and iw[r + 1][c]
+                    n: bool = r > 0 and is_wall[r - 1][c]
+                    s: bool = r < grid_h - 1 and is_wall[r + 1][c]
                     w: bool = c > 0 and is_wall_r[c - 1]
-                    e: bool = c < gw - 1 and is_wall_r[c + 1]
+                    e: bool = c < grid_w - 1 and is_wall_r[c + 1]
 
-                    base_char = get_char(n, s, e, w)
+                    base_char = self.get_wall_char(n, s, e, w)
                     padding: Literal["─", " "] = "─" if e else " "
                     rendered = base_char + padding
 
-                    if col:
+                    if colorizer:
                         key = (rendered, True)
                         colored_rendered = cache.get(key)
                         if colored_rendered is None:
-                            colored_rendered = col(rendered, True)
+                            colored_rendered = colorizer(rendered, True)
                             cache[key] = colored_rendered
                         line_chars.append(colored_rendered)
                     else:
                         line_chars.append(rendered)
                 else:
-                    rendered = cg[r][c]
-                    if col:
+                    rendered = content_grid[r][c]
+                    if colorizer:
                         key = (rendered, False)
                         colored_rendered = cache.get(key)
                         if colored_rendered is None:
-                            colored_rendered = col(rendered, False)
+                            colored_rendered = colorizer(rendered, False)
                             cache[key] = colored_rendered
                         line_chars.append(colored_rendered)
                     else:
