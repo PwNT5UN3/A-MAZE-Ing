@@ -134,46 +134,80 @@ class MazeGenerator(ABC):
         return cells
 
     def make_imperfect(self) -> None:
+        print(self.pattern_coordinates)
         for row in self.maze:
             for cell in row:
-                walls = [x.name for x in fields(cell)
-                         if not asdict(cell)[x.name]
-                         and x.name != 'fourty_two_pattern']
-                threshhold: float = 0.35
-                if cell.coordinates in self.pattern_coordinates\
-                        or len(walls) != 3:
+                walls = [
+                    x.name
+                    for x in fields(cell)
+                    if not asdict(cell)[x.name]
+                    and x.name != "fourty_two_pattern"
+                ]
+                threshhold: float = 1
+                if (
+                    cell.coordinates in self.pattern_coordinates
+                    or len(walls) != 3
+                ):
                     continue
-                if self.rng.random() < 1 - threshhold:
+                if self.rng.random() <= 1 - threshhold:
                     continue
+                print("before: ", cell, " ", walls)
                 if cell.coordinates[0] == 0:
-                    walls.remove('north')
+                    walls.remove("north")
                 if cell.coordinates[0] == self.height - 1:
-                    walls.remove('south')
+                    walls.remove("south")
                 if cell.coordinates[1] == 0:
-                    walls.remove('west')
+                    walls.remove("west")
                 if cell.coordinates[1] == self.width - 1:
-                    walls.remove('east')
+                    walls.remove("east")
+                if (
+                    tuple([cell.coordinates[0] - 1, cell.coordinates[1]])
+                    in self.pattern_coordinates
+                    and "north" in walls
+                ):
+                    walls.remove("north")
+                if (
+                    tuple([cell.coordinates[0] + 1, cell.coordinates[1]])
+                    in self.pattern_coordinates
+                    and "south" in walls
+                ):
+                    walls.remove("south")
+                if (
+                    tuple([cell.coordinates[0], cell.coordinates[1] + 1])
+                    in self.pattern_coordinates
+                    and "east" in walls
+                ):
+                    walls.remove("east")
+                if (
+                    tuple([cell.coordinates[0], cell.coordinates[1] - 1])
+                    in self.pattern_coordinates
+                    and "west" in walls
+                ):
+                    walls.remove("west")
+                print("after: ", cell, " ", walls)
+                if len(walls) == 0:
+                    continue
                 choice = self.rng.choice(walls)
-                if choice == 'north':
+                if choice == "north":
                     cell.north = True
-                    self.get_maze_cell_from_coordinate(tuple(
-                        [cell.coordinates[0] - 1,
-                         cell.coordinates[1]])).south = True
-                if choice == 'south':
+                    self.get_maze_cell_from_coordinate(
+                        tuple([cell.coordinates[0] - 1, cell.coordinates[1]])
+                    ).south = True
+                if choice == "south":
                     cell.south = True
-                    self.get_maze_cell_from_coordinate(tuple(
-                        [cell.coordinates[0] + 1,
-                         cell.coordinates[1]])).south = True
-                if choice == 'west':
+                    self.get_maze_cell_from_coordinate(
+                        tuple([cell.coordinates[0] + 1, cell.coordinates[1]])
+                    ).south = True
+                if choice == "west":
                     cell.west = True
-                    self.get_maze_cell_from_coordinate(tuple(
-                        [cell.coordinates[0],
-                         cell.coordinates[1] - 1])).south = True
-                if choice == 'east':
+                    self.get_maze_cell_from_coordinate(
+                        tuple([cell.coordinates[0], cell.coordinates[1] - 1])
+                    ).south = True
+                if choice == "east":
                     cell.east = True
-                    self.get_maze_cell_from_coordinate(tuple(
-                        [cell.coordinates[0],
-                         cell.coordinates[1] + 1])).south = True
+                    self.get_maze_cell_from_coordinate(
+                        tuple([cell.coordinates[0], cell.coordinates[1] + 1])
+                    ).south = True
 
     @abstractmethod
     def generate_maze(self) -> List[List[MazeCell]]:
