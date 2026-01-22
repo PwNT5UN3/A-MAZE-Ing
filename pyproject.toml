@@ -1,3 +1,27 @@
+[build-system]
+requires = ["setuptools>=61", "wheel>=0.36"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "a-maze-ing"
+version = "0.0.1"
+description = "Maze generation + rendering utilities"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pandas==2.2.2",
+  "requests==2.32.3",
+  "matplotlib==3.9.2",
+  "termcolor>=1.1.0",
+  "readchar>=3.0.0",
+]
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+<<<<<<< HEAD
+where = ["src"]
 [project]
 name = "mazegen"
 version = "0.1.0"
@@ -8,3 +32,6 @@ dependencies = []
 
 
 [
+=======
+where = ["src"]
+>>>>>>> e1e57c4 (removed trash)
