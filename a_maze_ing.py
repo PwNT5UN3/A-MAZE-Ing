@@ -42,6 +42,8 @@ def main() -> None:
         maze_generator_cls=gen,
         pathfinder_cls=BFS,
         seed=int(configs["seed"]),
+        perfect=configs["perfect"],
+        output=str(configs["output_file"]),
     )
 
 

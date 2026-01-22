@@ -77,18 +77,19 @@ def read_config(config_file: "str") -> dict:
                 else:
                     raise ValueError("Perfect is defined multiple times!")
             elif key == "output_file":
-                configs["output_file"] = val
+                configs["output_file"] = str(val)
             elif key == "seed":
-                print(val)
+                if val == "":
+                    val = "-1"
                 try:
                     if int(val) < 0 or int(val) > 2147483647:
-                        raise ValueError("")
+                        val = "-1"
                     configs["seed"] = val
                 except Exception:
                     raise ValueError(
                         "I'm too lazy to support multiple seed "
                         + "datatypes, so please stick with "
-                        + "positive signed 32-bit integers"
+                        + "signed 32-bit integers"
                     )
             elif key == "algorithm":
                 if val not in ["wilson", "dfs"]:
@@ -112,4 +113,6 @@ def read_config(config_file: "str") -> dict:
         configs["algorithm"] = "dfs"
     if configs.get("seed") is None or configs.get("seed") == "":
         configs["seed"] = -1
+    if configs.get("perfect") is None or configs.get("perfect") == "":
+        configs["perfect"] = False
     return configs

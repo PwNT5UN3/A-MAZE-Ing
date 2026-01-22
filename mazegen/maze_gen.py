@@ -141,7 +141,7 @@ class MazeGenerator(ABC):
                     if not asdict(cell)[x.name]
                     and x.name != "fourty_two_pattern"
                 ]
-                threshhold: float = 1
+                threshhold: float = 0.35
                 if (
                     cell.coordinates in self.pattern_coordinates
                     or len(walls) != 3
@@ -211,9 +211,7 @@ class MazeGenerator(ABC):
 
 
 class WilsonsAlgorithm(MazeGenerator):
-    def __init__(
-        self, width: int, height: int, *, seed: int | None = None
-    ) -> None:
+    def __init__(self, width: int, height: int, *, seed: int = -1) -> None:
         super().__init__(width, height, seed=seed)
 
     def generate_maze(self) -> List[List[MazeCell]]:
@@ -294,9 +292,7 @@ class WilsonsAlgorithm(MazeGenerator):
 
 
 class DFSearch(MazeGenerator):
-    def __init__(
-        self, width: int, height: int, *, seed: int | None = None
-    ) -> None:
+    def __init__(self, width: int, height: int, *, seed: int = -1) -> None:
         super().__init__(width, height, seed=seed)
 
     def generate_maze(self) -> List[List[MazeCell]]:

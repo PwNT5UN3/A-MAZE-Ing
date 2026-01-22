@@ -10,7 +10,7 @@ from termcolor import colored
 from enum import Enum
 from bfs import BFS, Finding
 from functools import lru_cache
-
+from output_file_generation import generate_output_file
 import os
 
 
@@ -21,8 +21,8 @@ def colorize(
     background: Optional[str] = None,
     start_color: str = "red",
     end_color: str = "magenta",
-    start_marker: str = "S ",
-    end_marker: str = "E ",
+    start_marker: str = "E ",
+    end_marker: str = "S ",
 ) -> Callable[[str, bool], str]:
     """Create a colorizer function for maze rendering.
 
@@ -313,6 +313,8 @@ class Terminal:
         entry: tuple[int, int],
         end: tuple[int, int],
         delay: float,
+        perfect: bool,
+        output: str,
     ) -> None:
         self.maze_generator_cls: Type[MazeGenerator] = maze_generator_cls
         self.pathfinder_cls: Type[Finding] = pathfinder_cls
@@ -324,6 +326,8 @@ class Terminal:
             end if end is not None else (height - 1, width - 1)
         )
         self.delay: float = delay
+        self.perfect: bool = perfect
+        self.output: str = output
 
         self.renderer: MazeRenderer = MazeRenderer()
         self.wall_color: str = "yellow"
@@ -525,14 +529,30 @@ class Terminal:
         generator: MazeGenerator = self.maze_generator_cls(
             width=self.width, height=self.height, seed=self.seed
         )
-        print("making maze")
         self.maze = generator.generate_maze()
-
+        if self.entry == self.exit:
+            raise ValueError("maze entry and exit cannot be on the same tile")
+        if (
+            self.entry in generator.pattern_coordinates
+            or self.exit in generator.pattern_coordinates
+        ):
+            raise ValueError("Start and end cannot be inside the 42 pattern")
+        if not self.perfect:
+            generator.make_imperfect()
         solver: Finding = self.pathfinder_cls()
         self.path = solver.pathfind(
             self.maze,
             start=self.entry,
             end=self.exit,
+        )
+        if self.path is None:
+            self.path = []
+        generate_output_file(
+            self.maze,
+            solver.path_to_directions(self.path),
+            self.entry,
+            self.exit,
+            self.output,
         )
 
     def run(self) -> None:
@@ -621,6 +641,8 @@ class MazeAppManager:
         entry: tuple[int, int],
         end: tuple[int, int],
         delay: float = 0.25,
+        perfect: bool,
+        output: str,
     ) -> None:
         self.terminal: Terminal = Terminal(
             maze_generator_cls=maze_generator_cls,
@@ -631,6 +653,8 @@ class MazeAppManager:
             end=end,
             delay=delay,
             seed=seed,
+            perfect=perfect,
+            output=output,
         )
 
     def run(self) -> None:
@@ -645,6 +669,8 @@ def interactive_maze_app(
     end: tuple[int, int],
     maze_generator_cls: Type[MazeGenerator],
     pathfinder_cls: Type[Finding],
+    perfect: bool,
+    output: str,
 ) -> None:
     """Backward-compatible wrapper that launches the terminal UI."""
 
@@ -656,6 +682,8 @@ def interactive_maze_app(
         seed=seed,
         entry=entry,
         end=end,
+        perfect=perfect,
+        output=output,
     )
     manager.run()
 
@@ -672,4 +700,6 @@ if __name__ == "__main__":
         end=(conf_height - 1, conf_width - 1),
         maze_generator_cls=DFSearch,
         pathfinder_cls=BFS,
+        perfect=True,
+        output="output.txt",
     )
