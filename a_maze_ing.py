@@ -2,7 +2,7 @@ from mazegen import DFSearch, WilsonsAlgorithm
 
 
 print("generating...")
-gen = WilsonsAlgorithm(20, 20)
+gen = WilsonsAlgorithm(20, 20, seed=0)
 maze = gen.generate_maze()
 gen.make_imperfect()
 # gen2 = DFSearch(50, 50)

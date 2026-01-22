@@ -134,7 +134,6 @@ class MazeGenerator(ABC):
         return cells
 
     def make_imperfect(self) -> None:
-        print(self.pattern_coordinates)
         for row in self.maze:
             for cell in row:
                 walls = [
@@ -151,7 +150,6 @@ class MazeGenerator(ABC):
                     continue
                 if self.rng.random() <= 1 - threshhold:
                     continue
-                print("before: ", cell, " ", walls)
                 if cell.coordinates[0] == 0:
                     walls.remove("north")
                 if cell.coordinates[0] == self.height - 1:
@@ -184,7 +182,6 @@ class MazeGenerator(ABC):
                     and "west" in walls
                 ):
                     walls.remove("west")
-                print("after: ", cell, " ", walls)
                 if len(walls) == 0:
                     continue
                 choice = self.rng.choice(walls)
@@ -194,7 +191,7 @@ class MazeGenerator(ABC):
                         tuple([cell.coordinates[0] - 1, cell.coordinates[1]])
                     ).south = True
                 if choice == "south":
-                    cell.south = True
+                    cell.north = True
                     self.get_maze_cell_from_coordinate(
                         tuple([cell.coordinates[0] + 1, cell.coordinates[1]])
                     ).south = True
@@ -202,12 +199,12 @@ class MazeGenerator(ABC):
                     cell.west = True
                     self.get_maze_cell_from_coordinate(
                         tuple([cell.coordinates[0], cell.coordinates[1] - 1])
-                    ).south = True
+                    ).east = True
                 if choice == "east":
                     cell.east = True
                     self.get_maze_cell_from_coordinate(
                         tuple([cell.coordinates[0], cell.coordinates[1] + 1])
-                    ).south = True
+                    ).west = True
 
     @abstractmethod
     def generate_maze(self) -> List[List[MazeCell]]:
