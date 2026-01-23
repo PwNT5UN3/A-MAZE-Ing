@@ -48,7 +48,7 @@ def main() -> None:
         seed=int(configs["seed"]),
         perfect=bool(configs["perfect"]),
         output=str(configs["output_file"]),
-        delay=0.4,
+        delay=0.075,
     ).run()
 
 

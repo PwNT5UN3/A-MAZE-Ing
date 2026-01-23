@@ -16,7 +16,7 @@ def colorize(
     fourty_two: str,
     path_color: Optional[str],
     background: Optional[str],
-    start_color: str = "magenta",
+    start_color: str = "green",
     end_color: str = "red",
     start_marker: str = "S ",
     end_marker: str = "E ",
@@ -37,7 +37,7 @@ def colorize(
 
     def _colorize(text: str, is_wall: bool) -> str:
 
-        if path_color and text == "░░":
+        if path_color and text == "▒▒":
             return colored(text, path_color, background)
 
         if text == start_marker:
@@ -158,13 +158,13 @@ class MazeRenderer:
                 cell: MazeCell = maze[r][c]
                 if not cell.fourty_two_pattern:
                     continue
-                content_grid[r * 2 + 1][c * 2 + 1] = "▓▓"
+                content_grid[r * 2 + 1][c * 2 + 1] = "░░"
 
     def _apply_solved_path(
         self,
         content_grid: list[list[str]],
         path: list[tuple[int, int]] | None,
-        marker: str = "░░",
+        marker: str = "▒▒",
     ) -> None:
         if not path:
             return
@@ -191,17 +191,17 @@ class MazeRenderer:
             # Horizontal step
             if r1 == r2 and c2 == c1 + 1:
                 # east corridor between centers
-                content_grid[cr1][cc1 + 1] = "░░"
+                content_grid[cr1][cc1 + 1] = "▒▒"
             elif r1 == r2 and c2 == c1 - 1:
                 # west corridor between centers
-                content_grid[cr1][cc1 - 1] = "░░"
+                content_grid[cr1][cc1 - 1] = "▒▒"
             # Vertical step
             elif c1 == c2 and r2 == r1 + 1:
                 # south corridor between centers
-                content_grid[cr1 + 1][cc1] = "░░"
+                content_grid[cr1 + 1][cc1] = "▒▒"
             elif c1 == c2 and r2 == r1 - 1:
                 # north corridor between centers
-                content_grid[cr1 - 1][cc1] = "░░"
+                content_grid[cr1 - 1][cc1] = "▒▒"
 
     def _mark_endpoints(
         self,
@@ -326,9 +326,9 @@ class Terminal:
         self.output: str = output
 
         self.renderer: MazeRenderer = MazeRenderer()
-        self.wall_color: str = "light_red"
-        self.fourty_two: str = "light_yellow"
-        self.path_color: str = "red"
+        self.wall_color: str = "magenta"
+        self.fourty_two: str = "red"
+        self.path_color: str = "magenta"
         self.background: str | None = "on_black"
         self.colorizer = self._build_colorizer()
 
