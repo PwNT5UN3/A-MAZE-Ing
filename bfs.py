@@ -15,12 +15,7 @@ class BFS:
         end: tuple[int, int],
     ) -> list[tuple[int, int]] | None:
         height: int = len(maze)
-        width: int = len(maze[0]) if height > 0 else 0
-
-        if not (0 <= start[0] < height and 0 <= start[1] < width):
-            return None
-        if not (0 <= end[0] < height and 0 <= end[1] < width):
-            return None
+        width: int = len(maze[0])
 
         queue: deque[tuple[int, int]] = deque([start])
         parent: dict[tuple[int, int], tuple[int, int] | None] = {start: None}

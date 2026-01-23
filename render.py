@@ -38,23 +38,23 @@ def colorize(
     def _colorize(text: str, is_wall: bool) -> str:
 
         if path_color and text == "▒▒":
-            return colored(text, path_color, background)
+            return str(colored(text, path_color, background))
 
         if text == start_marker:
-            return colored(text, start_color, background)
+            return str(colored(text, start_color, background))
 
         if text == end_marker:
-            return colored(text, end_color, background)
+            return str(colored(text, end_color, background))
 
         color: str = wall_color if is_wall else fourty_two
-        return colored(text, color, background)
+        return str(colored(text, color, background))
 
     return _colorize
 
 
 class Characters(Enum):
     """Readable enum for wall-connection cases."""
-
+    
     NONE = ((False, False, False, False), " ")
     NORTH = ((True, False, False, False), "╵")
     SOUTH = ((False, True, False, False), "╷")
@@ -106,7 +106,7 @@ class MazeRenderer:
         self._carve_passages(maze, is_wall, rows, cols)
         self._apply_forty_two_pattern(maze, content_grid, rows, cols)
         self._apply_solved_path(content_grid, path)
-        self._mark_endpoints(content_grid, rows, cols, start=start, end=end)
+        self._mark_endpoints(content_grid, start=start, end=end)
 
         return self._render_lines(
             is_wall, content_grid, grid_h, grid_w, colorizer
@@ -206,16 +206,14 @@ class MazeRenderer:
     def _mark_endpoints(
         self,
         content_grid: list[list[str]],
-        rows: int,
-        cols: int,
         *,
         start: tuple[int, int] | None,
         end: tuple[int, int] | None,
         start_marker: str = "E ",
         end_marker: str = "S ",
     ) -> None:
-        start_coord = start if start is not None else (0, 0)
-        end_coord = end if end is not None else (rows - 1, cols - 1)
+        start_coord = start
+        end_coord = end
 
         sr, sc = start_coord
         er, ec = end_coord
@@ -330,7 +328,12 @@ class Terminal:
         self.fourty_two: str = "red"
         self.path_color: str = "magenta"
         self.background: str | None = "on_black"
-        self.colorizer = self._build_colorizer()
+        self.colorizer = colorize(
+            wall_color=self.wall_color,
+            fourty_two=self.fourty_two,
+            path_color=self.path_color,
+            background=self.background,
+        )
 
         self.maze: list[list[MazeCell]] | None = None
         self.path: list[tuple[int, int]] | None = None
@@ -339,20 +342,6 @@ class Terminal:
     @staticmethod
     def _clear_screen() -> None:
         os.system("clear")
-
-    def _build_colorizer(self) -> Callable[[str, bool], str]:
-        base = colorize(
-            wall_color=self.wall_color,
-            fourty_two=self.fourty_two,
-            path_color=self.path_color,
-            background=self.background,
-        )
-
-        @lru_cache(maxsize=None)
-        def cached(text: str, is_wall: bool) -> str:
-            return base(text, is_wall)
-
-        return cached
 
     def _select_color_from_list(
         self, colors: tuple[str, ...] | list[str], prompt: str
@@ -388,11 +377,10 @@ class Terminal:
         try:
             import readchar
         except ImportError:
-            print(
+            raise ImportError(
                 "Error: 'readchar' library not found. Install it with: "
                 + "pip install readchar"
             )
-            return
 
         while True:
             self._clear_screen()
@@ -565,11 +553,10 @@ class Terminal:
         try:
             import readchar
         except ImportError:
-            print(
+            raise ImportError(
                 "Error: 'readchar' library not found. Install it with: "
                 + "pip install readchar"
             )
-            return
 
         # hides cursor
         print("\033[?25l")
