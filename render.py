@@ -380,6 +380,10 @@ class Terminal:
         idx = int(choice) - 1
         return colors[idx] if 0 <= idx < len(colors) else None
 
+    @staticmethod
+    def _print_colored_color(color_name: str) -> str:
+        return colored(text=color_name, color=color_name)
+
     def _color_menu(self) -> None:
         try:
             import readchar
@@ -393,9 +397,15 @@ class Terminal:
         while True:
             self._clear_screen()
             print("\n=== Color Configuration Menu ===\n")
-            print(f"1 - Wall Color: {self.wall_color}")
-            print(f"2 - 42 Color: {self.fourty_two}")
-            print(f"3 - Path Color: {self.path_color}")
+            print(
+                f"1 - Wall Color: {self._print_colored_color(self.wall_color)}"
+            )
+            print(
+                f"2 - 42 Color: {self._print_colored_color(self.fourty_two)}"
+            )
+            print(
+                f"3 - Path Color: {self._print_colored_color(self.path_color)}"
+            )
             bg_display = (
                 self.background.replace("on_", "")
                 if self.background
