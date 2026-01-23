@@ -4,7 +4,6 @@ from mazegen import (
     MazeCell,
     MazeGenerator,
 )
-from bfs import BFS
 from termcolor import colored
 from enum import Enum
 from functools import lru_cache
