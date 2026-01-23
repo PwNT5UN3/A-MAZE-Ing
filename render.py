@@ -14,14 +14,14 @@ import os
 
 
 def colorize(
-    wall_color: str = "yellow",
-    fourty_two: str = "cyan",
-    path_color: Optional[str] = None,
-    background: Optional[str] = None,
+    wall_color: str,
+    fourty_two: str,
+    path_color: Optional[str],
+    background: Optional[str],
     start_color: str = "magenta",
     end_color: str = "red",
-    start_marker: str = "E ",
-    end_marker: str = "S ",
+    start_marker: str = "S ",
+    end_marker: str = "E ",
 ) -> Callable[[str, bool], str]:
     """Create a colorizer function for maze rendering.
 
@@ -105,7 +105,7 @@ class MazeRenderer:
         cols: int = len(maze[0])
 
         is_wall, content_grid, grid_h, grid_w = self._init_grids(rows, cols)
-        self._carve_passages(maze, is_wall, content_grid, rows, cols)
+        self._carve_passages(maze, is_wall, rows, cols)
         self._apply_forty_two_pattern(maze, content_grid, rows, cols)
         self._apply_solved_path(content_grid, path)
         self._mark_endpoints(content_grid, rows, cols, start=start, end=end)
@@ -133,7 +133,6 @@ class MazeRenderer:
         self,
         maze: list[list[MazeCell]],
         is_wall: list[list[bool]],
-        content_grid: list[list[str]],
         rows: int,
         cols: int,
     ) -> None:
@@ -329,10 +328,10 @@ class Terminal:
         self.output: str = output
 
         self.renderer: MazeRenderer = MazeRenderer()
-        self.wall_color: str = "red"
-        self.fourty_two: str = "red"
-        self.path_color: str = "grey"
-        self.background: str | None = "on_black"
+        self.wall_color: str = "yellow"
+        self.fourty_two: str = "black"
+        self.path_color: str = "red"
+        self.background: str | None = "on_white"
         self.colorizer = self._build_colorizer()
 
         self.maze: list[list[MazeCell]] | None = None
