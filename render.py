@@ -565,7 +565,7 @@ class Terminal:
             )
 
         # hides cursor
-        # print("\033[?25l")
+        print("\033[?25l")
         self._clear_screen()
         print("╔════════════════════════════════════════════╗")
         print("║         Interactive Maze Generator         ║")
@@ -625,3 +625,5 @@ class Terminal:
             except Exception as exc:
                 print(f"Error: {exc}")
                 break
+            finally:
+                print("\033[?25h")
