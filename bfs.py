@@ -81,35 +81,3 @@ class BFS:
                 directions.append("W")
 
         return directions
-
-
-class PathSolver:
-
-    def __init__(
-        self, maze_generator: type[MazeGenerator], algorithm: type
-    ) -> None:
-        self.maze_generator: type[MazeGenerator] = maze_generator
-        self.algorithm: type = algorithm
-
-    def solve(
-        self,
-        width: int,
-        height: int,
-        start: tuple[int, int],
-        end: tuple[int, int],
-    ) -> None:
-        gen: MazeGenerator = self.maze_generator(width=width, height=height)
-        maze: list[list[MazeCell]] = gen.generate_maze()
-
-        algorithm = self.algorithm()
-        path: list[tuple[int, int]] | None = algorithm.pathfind(
-            maze, start, end
-        )
-
-        if path:
-            print(f"Path found with {len(path)} steps:")
-            directions: list[str] = algorithm.path_to_directions(path)
-            print("Directions:", "".join(directions))
-            print("Path coordinates:", path)
-        else:
-            print("No path found!")
