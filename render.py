@@ -316,8 +316,8 @@ class Terminal:
         self.width: int = width
         self.height: int = height
         self.seed: int = seed
-        self.entry: tuple[int, int] = entry
-        self.exit: tuple[int, int] = end
+        self.entry: tuple[int, int] = end
+        self.exit: tuple[int, int] = entry
         self.delay: float = delay
         self.perfect: bool = perfect
         self.output: str = output
