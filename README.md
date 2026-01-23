@@ -277,7 +277,7 @@ Follow‑up (post‑sprint)
 **Pathfinding:**
 - [Breadth-First Search](https://www.geeksforgeeks.org/dsa/breadth-first-search-or-bfs-for-a-graph/) - BFS algorithm explanation
 - [Breadth-First Search](https://www.youtube.com/watch?v=D14YK-0MtcQ) - BFS algorithm explanation for mazes
-- [Depth-First Search](https://www.youtube.com/watch?v=Hr5cWUld4vU) - DFS alghorithm for better global understanding
+- [Depth-First Search](https://www.youtube.com/watch?v=Hr5cWUld4vU) - DFS algorithm for better global understanding
 
 **Python & Design:**
 - [ABC Module](https://www.geeksforgeeks.org/python/abstract-base-class-abc-in-python/) - GFG page for abstract base classes
