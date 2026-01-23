@@ -1,8 +1,7 @@
 from sys import argv
 from config_reader import read_config
 from render import Terminal
-from mazegen import DFSearch, WilsonsAlgorithm
-from bfs import BFS
+from mazegen import DFSearch, WilsonsAlgorithm, BFS
 
 
 def get_int_int_tuple(val_1: int, val_2: int) -> tuple[int, int]:

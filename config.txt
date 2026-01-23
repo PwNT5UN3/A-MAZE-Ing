@@ -2,18 +2,18 @@
 # These keys are essential for defining the dimensions and structure of the maze.
 
 # Width of the maze; must be declared as an integer.
-width = 20
+width = 100
 
 # Height of the maze; must be declared as an integer.
-height = 20
+height = 30
 
 # Entry point of the maze defined as x, y coordinates.
 # Both x and y must be between 0 and (width or height) - 1 and must be in the (x,y) format.
-entry = 0, 0
+entry = 99, 29
 
 # Exit point of the maze defined as x, y coordinates.
 # Both x and y must be between 0 and (width or height) - 1 and must be in the (x,y) format.
-exit = 19, 19
+exit = 0, 0
 
 # Optional Configuration Keys
 # These keys have default values and are not mandatory.
@@ -22,15 +22,15 @@ exit = 19, 19
 # A perfect maze has no loops and only one path between any two points.
 # Note: Setting perfect to false does not guarantee a non-perfect maze; 
 # it merely allows for the possibility of imperfections.
-perfect = False
+perfect = true
 
 # Output file: Defines where the generated maze will be saved.
 # Default value is 'output.txt'.
-output_file = 'output.txt'
+output_file = output.txt
 
 # Seed: Initializes the Mersenne Twister PRNG for reproducible randomness.
 # If not set, a random seed will be chosen; must be an integer between 0 and 2,147,483,647.
-# seed = 42
+seed = 69
 
 # Algorithm Selection: Choose between traversal algorithms.
 # Options are 'dfs' for Depth First Search or 'wilson' for Wilson's algorithm.

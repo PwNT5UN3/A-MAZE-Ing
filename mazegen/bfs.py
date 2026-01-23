@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from collections import deque
-from mazegen import MazeCell, MazeGenerator
+from mazegen import MazeCell
 
 
 class BFS:

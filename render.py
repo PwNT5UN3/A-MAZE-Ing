@@ -6,7 +6,6 @@ from mazegen import (
 )
 from termcolor import colored
 from enum import Enum
-from functools import lru_cache
 from output_file_generation import generate_output_file
 import os
 
@@ -38,23 +37,23 @@ def colorize(
     def _colorize(text: str, is_wall: bool) -> str:
 
         if path_color and text == "▒▒":
-            return str(colored(text, path_color, background))
+            return colored(text, path_color, background)
 
         if text == start_marker:
-            return str(colored(text, start_color, background))
+            return colored(text, start_color, background)
 
         if text == end_marker:
-            return str(colored(text, end_color, background))
+            return colored(text, end_color, background)
 
         color: str = wall_color if is_wall else fourty_two
-        return str(colored(text, color, background))
+        return colored(text, color, background)
 
     return _colorize
 
 
 class Characters(Enum):
     """Readable enum for wall-connection cases."""
-    
+
     NONE = ((False, False, False, False), " ")
     NORTH = ((True, False, False, False), "╵")
     SOUTH = ((False, True, False, False), "╷")
@@ -95,9 +94,9 @@ class MazeRenderer:
         self,
         maze: list[list[MazeCell]],
         colorizer: Callable[[str, bool], str] | None,
-        path: list[tuple[int, int]] | None = None,
-        start: tuple[int, int] | None = None,
-        end: tuple[int, int] | None = None,
+        path: list[tuple[int, int]] | None,
+        start: tuple[int, int],
+        end: tuple[int, int],
     ) -> str:
         rows: int = len(maze)
         cols: int = len(maze[0])
@@ -207,8 +206,8 @@ class MazeRenderer:
         self,
         content_grid: list[list[str]],
         *,
-        start: tuple[int, int] | None,
-        end: tuple[int, int] | None,
+        start: tuple[int, int],
+        end: tuple[int, int],
         start_marker: str = "E ",
         end_marker: str = "S ",
     ) -> None:
@@ -328,12 +327,7 @@ class Terminal:
         self.fourty_two: str = "red"
         self.path_color: str = "magenta"
         self.background: str | None = "on_black"
-        self.colorizer = colorize(
-            wall_color=self.wall_color,
-            fourty_two=self.fourty_two,
-            path_color=self.path_color,
-            background=self.background,
-        )
+        self.colorizer = self._build_colorizer()
 
         self.maze: list[list[MazeCell]] | None = None
         self.path: list[tuple[int, int]] | None = None
@@ -368,6 +362,16 @@ class Terminal:
 
         idx = int(choice) - 1
         return colors[idx] if 0 <= idx < len(colors) else None
+
+    def _build_colorizer(self) -> Callable[[str, bool], str]:
+        base = colorize(
+            wall_color=self.wall_color,
+            fourty_two=self.fourty_two,
+            path_color=self.path_color,
+            background=self.background,
+        )
+
+        return base
 
     @staticmethod
     def _print_colored_color(color_name: str) -> str:
@@ -414,6 +418,7 @@ class Terminal:
                         )
                         if selected:
                             self.wall_color = selected
+                            self.colorizer = self._build_colorizer()
 
                     case "2":
                         selected = self._select_color_from_list(
@@ -421,7 +426,8 @@ class Terminal:
                             "Select 42 Color:",
                         )
                         if selected:
-                            self.empty_color = selected
+                            self.fourty_two = selected
+                            self.colorizer = self._build_colorizer()
 
                     case "3":
                         selected = self._select_color_from_list(
@@ -429,6 +435,7 @@ class Terminal:
                         )
                         if selected:
                             self.path_color = selected
+                            self.colorizer = self._build_colorizer()
 
                     case "4":
                         self._clear_screen()
@@ -444,9 +451,9 @@ class Terminal:
                         choice: str = readchar.readchar()
                         if choice in self.BACKGROUND_COLORS:
                             self.background = self.BACKGROUND_COLORS[choice]
+                            self.colorizer = self._build_colorizer()
 
                     case "5" if self.maze:
-                        self.colorizer = self._build_colorizer()
                         self._render_current_maze(force_show_path=True)
                         print("\nPress any key to return to color menu...")
                         readchar.readchar()
@@ -456,7 +463,6 @@ class Terminal:
                         return
 
             except KeyboardInterrupt:
-                self.colorizer = self._build_colorizer()
                 return
 
     def _render_current_maze(
@@ -559,7 +565,7 @@ class Terminal:
             )
 
         # hides cursor
-        print("\033[?25l")
+        # print("\033[?25l")
         self._clear_screen()
         print("╔════════════════════════════════════════════╗")
         print("║         Interactive Maze Generator         ║")
