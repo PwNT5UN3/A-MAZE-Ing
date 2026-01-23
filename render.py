@@ -320,9 +320,7 @@ class Terminal:
         self.height: int = height
         self.seed: int = seed
         self.entry: tuple[int, int] = entry
-        self.exit: tuple[int, int] = (
-            end if end is not None else (height - 1, width - 1)
-        )
+        self.exit: tuple[int, int] = end
         self.delay: float = delay
         self.perfect: bool = perfect
         self.output: str = output
