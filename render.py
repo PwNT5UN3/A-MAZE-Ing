@@ -2,7 +2,6 @@
 from typing import Callable, Literal, Type, Optional, Any
 from mazegen import (
     MazeCell,
-    DFSearch,
     MazeGenerator,
 )
 from bfs import BFS
@@ -281,12 +280,13 @@ class Terminal:
     COLORS: dict[str, str] = {
         "1": "red",
         "2": "green",
-        "3": "yellow",
-        "4": "blue",
-        "5": "magenta",
-        "6": "cyan",
-        "7": "white",
-        "8": "grey",
+        "3": "blue",
+        "4": "magenta",
+        "5": "cyan",
+        "6": "white",
+        "7": "grey",
+        "8": "light_red",
+        "9": "light_yellow",
     }
 
     BACKGROUND_COLORS: dict[str, str | None] = {
@@ -298,6 +298,7 @@ class Terminal:
         "6": "on_magenta",
         "7": "on_cyan",
         "8": "on_white",
+        "9": "on_light_grey",
     }
 
     def __init__(
@@ -326,10 +327,10 @@ class Terminal:
         self.output: str = output
 
         self.renderer: MazeRenderer = MazeRenderer()
-        self.wall_color: str = "yellow"
-        self.fourty_two: str = "black"
+        self.wall_color: str = "light_red"
+        self.fourty_two: str = "light_yellow"
         self.path_color: str = "red"
-        self.background: str | None = "on_white"
+        self.background: str | None = "on_black"
         self.colorizer = self._build_colorizer()
 
         self.maze: list[list[MazeCell]] | None = None
@@ -561,6 +562,8 @@ class Terminal:
             )
             return
 
+        # hides cursor
+        print("\033[?25l")
         self._clear_screen()
         print("╔════════════════════════════════════════════╗")
         print("║         Interactive Maze Generator         ║")
@@ -620,81 +623,3 @@ class Terminal:
             except Exception as exc:
                 print(f"Error: {exc}")
                 break
-
-
-class MazeAppManager:
-    """Simple coordinator to wire algorithms, sizing, and the terminal UI."""
-
-    def __init__(
-        self,
-        *,
-        maze_generator_cls: Type[MazeGenerator],
-        pathfinder_cls: Type[Any],
-        width: int,
-        height: int,
-        seed: int,
-        entry: tuple[int, int],
-        end: tuple[int, int],
-        delay: float = 0.25,
-        perfect: bool,
-        output: str,
-    ) -> None:
-        self.terminal: Terminal = Terminal(
-            maze_generator_cls=maze_generator_cls,
-            pathfinder_cls=pathfinder_cls,
-            width=width,
-            height=height,
-            entry=entry,
-            end=end,
-            delay=delay,
-            seed=seed,
-            perfect=perfect,
-            output=output,
-        )
-
-    def run(self) -> None:
-        self.terminal.run()
-
-
-def interactive_maze_app(
-    height: int,
-    width: int,
-    seed: int,
-    entry: tuple[int, int],
-    end: tuple[int, int],
-    maze_generator_cls: Type[MazeGenerator],
-    pathfinder_cls: Type[Any],
-    perfect: bool,
-    output: str,
-) -> None:
-    """Backward-compatible wrapper that launches the terminal UI."""
-
-    manager: MazeAppManager = MazeAppManager(
-        maze_generator_cls=maze_generator_cls,
-        pathfinder_cls=pathfinder_cls,
-        width=width,
-        height=height,
-        seed=seed,
-        entry=entry,
-        end=end,
-        perfect=perfect,
-        output=output,
-    )
-    manager.run()
-
-
-if __name__ == "__main__":
-    conf_height = 50
-    conf_width = 50
-    seed = -1
-    interactive_maze_app(
-        height=conf_height,
-        width=conf_width,
-        seed=seed,
-        entry=(0, 0),
-        end=(conf_height - 1, conf_width - 1),
-        maze_generator_cls=DFSearch,
-        pathfinder_cls=BFS,
-        perfect=True,
-        output="output.txt",
-    )

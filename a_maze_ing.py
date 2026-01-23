@@ -1,6 +1,6 @@
 from sys import argv
 from config_reader import read_config
-from render import interactive_maze_app
+from render import Terminal
 from mazegen import DFSearch, WilsonsAlgorithm
 from bfs import BFS
 
@@ -35,7 +35,7 @@ def main() -> None:
         gen: type[DFSearch | WilsonsAlgorithm] = DFSearch
     else:
         gen = WilsonsAlgorithm
-    interactive_maze_app(
+    Terminal(
         height=int(configs["height"]),
         width=int(configs["width"]),
         entry=(
@@ -48,7 +48,8 @@ def main() -> None:
         seed=int(configs["seed"]),
         perfect=bool(configs["perfect"]),
         output=str(configs["output_file"]),
-    )
+        delay=0.4,
+    ).run()
 
 
 if __name__ == "__main__":
