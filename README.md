@@ -181,7 +181,7 @@ Wilson's Algorithm generates **uniformly distributed** mazes, meaning every poss
 **Trade-offs:**
 - **Uniform distribution** - unbiased maze generation
 - **Interesting patterns** - less corridor bias than DFS
-- **Drasticly slower** - especially on large mazes
+- **Drastically slower** - especially on large mazes
 - **Complex implementation** - requires loop detection
 
 ---
