@@ -81,13 +81,16 @@ class Characters(Enum):
 
 
 class MazeRenderer:
+    """Renders maze data with wall characters and paths."""
 
     def __init__(self) -> None:
+        """Initialize character map for maze rendering."""
         self.char_map: dict[tuple[bool, bool, bool, bool], str] = {
             member.tuple: member.char for member in Characters
         }
 
     def get_wall_char(self, n: bool, s: bool, e: bool, w: bool) -> str:
+        """Get wall character for directional connections."""
         return self.char_map.get((n, s, e, w), Characters.NONE.char)
 
     def render_maze_walls(
@@ -98,6 +101,7 @@ class MazeRenderer:
         start: tuple[int, int],
         end: tuple[int, int],
     ) -> str:
+        """Render maze with walls, paths, and endpoints."""
         rows: int = len(maze)
         cols: int = len(maze[0])
 
@@ -114,6 +118,7 @@ class MazeRenderer:
     def _init_grids(
         self, rows: int, cols: int
     ) -> tuple[list[list[bool]], list[list[str]], int, int]:
+        """Initialize wall and content grids for rendering."""
         grid_h: int = rows * 2 + 1
         grid_w: int = cols * 2 + 1
 
@@ -133,6 +138,7 @@ class MazeRenderer:
         rows: int,
         cols: int,
     ) -> None:
+        """Mark wall grid based on maze cell connections."""
         for r in range(rows):
             for c in range(cols):
                 cell: MazeCell = maze[r][c]
@@ -152,6 +158,7 @@ class MazeRenderer:
         rows: int,
         cols: int,
     ) -> None:
+        """Mark special cells with 42 pattern indicator."""
         for r in range(rows):
             for c in range(cols):
                 cell: MazeCell = maze[r][c]
@@ -165,6 +172,7 @@ class MazeRenderer:
         path: list[tuple[int, int]] | None,
         marker: str = "▒▒",
     ) -> None:
+        """Apply solved path markers and connectors to grid."""
         if not path:
             return
         self._mark_path_nodes(content_grid, path, marker)
@@ -211,6 +219,7 @@ class MazeRenderer:
         start_marker: str = "E ",
         end_marker: str = "S ",
     ) -> None:
+        """Mark start and end positions on content grid."""
         start_coord = start
         end_coord = end
 
@@ -228,6 +237,7 @@ class MazeRenderer:
         grid_w: int,
         colorizer: Callable[[str, bool], str] | None,
     ) -> str:
+        """Build colored output strings from wall and content grids."""
         cache: dict[tuple[str, bool], str] = {}
         lines: list[str] = []
 
@@ -311,6 +321,7 @@ class Terminal:
         perfect: bool,
         output: str,
     ) -> None:
+        """Initialize Terminal with maze and rendering config."""
         self.maze_generator_cls: Type[MazeGenerator] = maze_generator_cls
         self.pathfinder_cls: Type[Any] = pathfinder_cls
         self.width: int = width
@@ -335,6 +346,7 @@ class Terminal:
 
     @staticmethod
     def _clear_screen() -> None:
+        """Clear terminal screen."""
         os.system("clear")
 
     def _select_color_from_list(
@@ -364,6 +376,7 @@ class Terminal:
         return colors[idx] if 0 <= idx < len(colors) else None
 
     def _build_colorizer(self) -> Callable[[str, bool], str]:
+        """Build colorizer from current color settings."""
         base = colorize(
             wall_color=self.wall_color,
             fourty_two=self.fourty_two,
@@ -375,9 +388,11 @@ class Terminal:
 
     @staticmethod
     def _print_colored_color(color_name: str) -> str:
+        """Return colored color name for display."""
         return colored(text=color_name, color=color_name)
 
     def _color_menu(self) -> None:
+        """Display interactive color configuration menu."""
         try:
             import readchar
         except ImportError:
@@ -468,6 +483,7 @@ class Terminal:
     def _render_current_maze(
         self, force_show_path: bool | None = None
     ) -> None:
+        """Render and display current maze with optional path."""
         if self.maze is None:
             print("No maze generated yet. Press SPACE to generate one.")
             return
@@ -494,6 +510,7 @@ class Terminal:
         )
 
     def _animate_path(self) -> None:
+        """Animate path solution step-by-step on maze."""
         import time
 
         if not self.maze or not self.path or len(self.path) < 2:
@@ -526,6 +543,7 @@ class Terminal:
             time.sleep(self.delay)
 
     def _generate_maze_and_path(self) -> None:
+        """Generate maze and solve with pathfinder algorithm."""
         generator: MazeGenerator = self.maze_generator_cls(
             width=self.width, height=self.height, seed=self.seed
         )
@@ -556,6 +574,7 @@ class Terminal:
         )
 
     def run(self) -> None:
+        """Start interactive maze generation and visualization loop."""
         try:
             import readchar
         except ImportError:

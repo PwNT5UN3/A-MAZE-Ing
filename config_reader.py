@@ -1,4 +1,5 @@
 def read_config(config_file: "str") -> dict[str, str | int | bool]:
+    """Parse configuration file and validate required fields."""
     required = set(
         ["width", "height", "entry.x", "entry.y", "exit.x", "exit.y"]
     )

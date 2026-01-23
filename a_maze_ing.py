@@ -5,10 +5,12 @@ from mazegen import DFSearch, WilsonsAlgorithm, BFS
 
 
 def get_int_int_tuple(val_1: int, val_2: int) -> tuple[int, int]:
+    """Convert two integers to a tuple."""
     return (val_1, val_2)
 
 
 def main() -> None:
+    """Parse config and run maze generation with rendering."""
     if len(argv) < 2:
         print("No config file given. Aborting...")
         return

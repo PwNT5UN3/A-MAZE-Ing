@@ -8,6 +8,7 @@ def generate_output_file(
     end: tuple[int, int],
     filename: str,
 ) -> None:
+    """Write maze, path, and endpoints to output file."""
     with open(filename, "w") as file:
         for row in maze:
             for cell in row:
