@@ -2,7 +2,6 @@ __pycache__/*
 *.pyc
 .venv/
 .pyc
-config.txt
 .vscode
 tests/
 .pytest_cache/
@@ -11,3 +10,5 @@ tests/
 a_maze_ing.egg-info/
 uv.lock
 .mypy_cache
+.python-version
+output.txt
